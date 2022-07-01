@@ -15,7 +15,6 @@ public class TwitchSharkName: Mod
     public static System.Random rand = new System.Random();
     public string sharkCurrentlyAttacking;
     public NameRepository names = new NameRepository();
-
     private Harmony harmonyInstance;
     private AssetBundle assets;
 
@@ -35,19 +34,40 @@ public class TwitchSharkName: Mod
         Log("Twitch Shark mod loaded");
     }
 
-    public void ExtraSettingsAPI_Load()
+    private void Initialise()
     {
-        Debug.Log("Settings loaded");
         var username = ExtraSettingsAPI_GetInputValue("twitchUsername");
         var token = ExtraSettingsAPI_GetInputValue("twitchToken");
         var channel = ExtraSettingsAPI_GetInputValue("twitchChannel");
 
+        if(token == "" || username == "" || channel == "")
+        {
+            Debug.Log("Missing Twitch Details. Please go to Settings");
+            FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, "Missing Twitch Details. Please go to Settings", 10, HNotify.ErrorSprite);
+            return;
+        }
+
+        names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
+      
+    }
+    public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
+    {
+        var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
+        nameTag.AddComponent<Billboard>();
+
+        nameTag.transform.SetParent(shark.transform);
+        nameTag.transform.localPosition = new Vector3(0, 2f, 0);
+        nameTag.transform.localRotation = Quaternion.identity;
+
+        var text = nameTag.GetComponentInChildren<TextMeshPro>();
         if (Raft_Network.IsHost)
         {
-            names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
+            text.text = names.Next();
+            Debug.Log($"Adding the name: {text.text} to the shark");
         }
-    }
 
+        return text;
+    }
     public void OnModUnload()
     {
         if (Raft_Network.IsHost)
@@ -80,7 +100,7 @@ public class TwitchSharkName: Mod
         }
     }
 
-    [ConsoleCommand(name: "respawnshark", docs: "respawns the shark with a new name")]
+    [ConsoleCommand(name: "respawnshark", docs: "respawns the shark with a new name [debug/emergency use only]")]
     public void RespawnCommand(string[] args)
     {
         KillRandomShark();
@@ -115,26 +135,31 @@ public class TwitchSharkName: Mod
         }
     }
 
-
-    public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
+    public void ExtraSettingsAPI_Load()
     {
-        var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
-        nameTag.AddComponent<Billboard>();
-
-        nameTag.transform.SetParent(shark.transform);
-        nameTag.transform.localPosition = new Vector3(0, 2f, 0);
-        nameTag.transform.localRotation = Quaternion.identity;
-
-        var text = nameTag.GetComponentInChildren<TextMeshPro>();
+        Debug.Log("Settings loaded");
         if (Raft_Network.IsHost)
         {
-            text.text = names.Next();
-            Debug.Log($"Adding the name: {text.text} to the shark");
+            Initialise();
         }
 
-        return text;
     }
 
+    public void ExtraSettingsAPI_SettingsOpen()
+    {
+        if (Raft_Network.IsHost)
+        {
+            names.Stop();
+        }
+    }
+
+    public void ExtraSettingsAPI_SettingsClose()
+    {
+        if (Raft_Network.IsHost)
+        {
+            Initialise();
+        }
+    }
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
 
@@ -142,6 +167,21 @@ public class TwitchSharkName: Mod
     {
         Exception ex = task.Exception;
         Debug.Log(ex);
+    }
+
+    public static HNotification LoadingNotification(string message)
+    {
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.spinning, message).SetIcon(HNotify.LoadingSprite);
+    }
+
+    public static HNotification ErrorNotification(string message)
+    {
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 10).SetIcon(HNotify.ErrorSprite);
+    }
+
+    public static HNotification SuccessNotification(string message)
+    {
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5).SetIcon(HNotify.CheckSprite);
     }
 
 }

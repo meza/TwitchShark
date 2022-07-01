@@ -14,9 +14,15 @@ class Twitch
     private StreamReader streamReader;
     private StreamWriter streamWriter;
     private TaskCompletionSource<int> connected = new TaskCompletionSource<int>();
+    public event TwitchConnectionEventHandler OnConnection = delegate { };
     public event TwitchChatEventHandler OnMessage = delegate { };
     public delegate void TwitchChatEventHandler(object sender, TwitchChatMessage e);
+    public delegate void TwitchConnectionEventHandler(object sender, TwitchConnection e);
 
+    public class TwitchConnection: EventArgs
+    {
+        public bool Success { get; set; }
+    }
     public class TwitchChatMessage : EventArgs
     {
         public string Sender { get; set; }
@@ -44,9 +50,6 @@ class Twitch
         await streamWriter.WriteLineAsync($"PASS {this.Token}");
         await streamWriter.WriteLineAsync($"NICK {this.Username}");
 
-        connected.SetResult(0);
-        Debug.Log("Connected to twitch");
-
         while (true)
         {
             if (cts.IsCancellationRequested)
@@ -60,6 +63,31 @@ class Twitch
             {
                 Console.WriteLine("PING");
                 await streamWriter.WriteLineAsync($"PONG {split[1]}");
+            }
+
+            if (split.Length > 1 && split[1] == "001") {
+                connected.SetResult(0);
+                Debug.Log("Connected to twitch");
+                OnConnection(this, new TwitchConnection
+                {
+                    Success = true
+                });
+            }
+
+            if (split.Length > 3 && split[1] == "NOTICE")
+            {
+                var colonPosition = line.IndexOf(':', 1);
+                var message = line.Substring(colonPosition + 1).ToLower();
+
+                if(message == "login authentication failed" || message == "improperly formatted auth")
+                {
+                    OnConnection(this, new TwitchConnection
+                    {
+                        Success = false
+                    });
+                    cts.Cancel();
+                }
+
             }
             if (split.Length > 3 && split[2] == "PRIVMSG")
             {
@@ -85,8 +113,8 @@ class Twitch
                     }
                 });
 
-                int secondColonPosition = split[4].IndexOf(':');//the 1 here is what skips the first character
-                msg.Message = split[4].Substring(secondColonPosition + 1);//Everything past the second colon
+                int secondColonPosition = split[4].IndexOf(':');
+                msg.Message = split[4].Substring(secondColonPosition + 1);
                 msg.Channel = split[3].TrimStart('#');
                 OnMessage(this, msg);
             }

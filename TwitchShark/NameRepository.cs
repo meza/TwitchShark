@@ -9,6 +9,7 @@ public class NameRepository
 {
     Twitch client;
 
+    private HNotification connectionNotification;
     private readonly CancellationTokenSource cts = new CancellationTokenSource();
     private readonly System.Collections.Generic.HashSet<string> activeChatters = new System.Collections.Generic.HashSet<string>();
     public void Stop()
@@ -17,12 +18,15 @@ public class NameRepository
     }
     public async Task Start(String username, String token, String channel)
     {
+        connectionNotification = TwitchSharkName.LoadingNotification("Connecting to Twitch");
         client = new Twitch(username, token);
+        client.OnMessage += OnMessage;
+        client.OnConnection += OnConnection;
 
         client.Start(cts);
-        
+    
         await client.JoinChannel(channel);
-        client.OnMessage += OnMessage;
+        
 
     }
 
@@ -40,6 +44,18 @@ public class NameRepository
         }
 
         return true;
+    }
+
+    private void OnConnection(object sender, TwitchConnection connection)
+    {
+        connectionNotification.Close();
+        if (connection.Success == true)
+        {
+            TwitchSharkName.SuccessNotification("Connected to Twitch");
+            return;
+        }
+
+        TwitchSharkName.ErrorNotification("Could not connect to Twitch. Please check your settings.");
     }
     private void OnMessage(object sender, TwitchChatMessage message)
     {
