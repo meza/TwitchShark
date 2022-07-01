@@ -1,5 +1,26 @@
 # Twitch Shark Changelog
 
+## [1.1.5](https://github.com/meza/TwitchShark/compare/v1.1.4...v1.1.5) (2022-07-01)
+
+
+### Bug Fixes
+
+* proper build this time ([3b06bfa](https://github.com/meza/TwitchShark/commit/3b06bfa2f15956e58778293f08c1b05550f5867f))
+
+## [1.1.4](https://github.com/meza/TwitchShark/compare/v1.1.3...v1.1.4) (2022-07-01)
+
+
+### Bug Fixes
+
+* attempt with the publishcmd ([64e14e2](https://github.com/meza/TwitchShark/commit/64e14e2213ba7610307062afaf24c8640462d09b))
+
+## [1.1.3](https://github.com/meza/TwitchShark/compare/v1.1.2...v1.1.3) (2022-07-01)
+
+
+### Bug Fixes
+
+* attempt to fix the modinfo version yet again ([ee0e68f](https://github.com/meza/TwitchShark/commit/ee0e68f0dc2233e2cc251e6a4b12737158dcc10e))
+
 ## [1.1.2](https://github.com/meza/TwitchShark/compare/v1.1.1...v1.1.2) (2022-07-01)
 
 
