@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+# [1.1.0](https://github.com/meza/TwitchShark/compare/v1.0.1...v1.1.0) (2022-07-01)
+
+
+### Features
+
+* added the mod updater version link ([da96b88](https://github.com/meza/TwitchShark/commit/da96b88f2bf0e8e1108c51f0b19dfab90415593b))
+
 ## [1.0.1](https://github.com/meza/TwitchShark/compare/v1.0.0...v1.0.1) (2022-07-01)
 
 
