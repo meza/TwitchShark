@@ -47,7 +47,7 @@
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "./scripts/release.sh \"${nextRelease.gitTag}\""
+        "prepareCmd": "./scripts/release.sh \"${nextRelease.gitTag}\""
       }
     ]
   ]
