@@ -8,7 +8,7 @@
   "banner": "banner.png",
   "gameVersion": "1.0",
   "requiredByAllPlayers": true,
-  "updateUrl": "",
+  "updateUrl": "https://raftmodding.com/api/v1/mods/twitch-shark/version.txt",
   "isModPermanent": false,
   "excludedFiles": [],
   "modSettings": [
