@@ -30,6 +30,7 @@ jobs:
         working-directory: TwitchShark
       
       - run: npm i --location=global semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/exec
+      - run: chmod a+x ./scripts/release.sh
       
       - name: Release
         env:
