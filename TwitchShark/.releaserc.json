@@ -1,0 +1,58 @@
+{
+  "branches": [
+    "+([0-9])?(.{+([0-9]),x}).x",
+    "main",
+    "next",
+    {
+      "name": "beta",
+      "prerelease": true
+    },
+    {
+      "name": "alpha",
+      "prerelease": true
+    }
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogTitle": "# Twitch Shark Changelog",
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": [ "CHANGELOG.md" ],
+            "name": "adr-tools-${nextRelease.gitTag}.zip",
+            "label": "ADR-Tools ${nextRelease.gitTag}"
+          },
+          {
+            "path": "TwitchShar.rmod",
+            "name": "TwitchShark-${nextRelease.gitTag}",
+            "label": "Twitch Shark mod"
+          }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "message": "chore(release): ${nextRelease.version} as ${branch.channel} [skip ci]\n\n${nextRelease.notes}",
+        "assets": [
+          "CHANGELOG.md"
+        ]
+      }
+    ]
+  ]
+}
