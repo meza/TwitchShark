@@ -19,7 +19,7 @@ public class NameRepository
     {
         client = new Twitch(username, token);
 
-        client.Start(cts)
+        client.Start(cts);
         
         await client.JoinChannel(channel);
         client.OnMessage += OnMessage;
