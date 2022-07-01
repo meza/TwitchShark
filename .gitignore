@@ -1,4 +1,4 @@
 .vs
-.rmod
-TwitchShark/obj
-TwitchShark/bin
+*.rmod
+obj
+bin
