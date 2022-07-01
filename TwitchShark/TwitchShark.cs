@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TwitchSharkName: Mod
 {
@@ -52,6 +53,9 @@ public class TwitchSharkName: Mod
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
+        var potentialTextComponent = shark.GetComponentInChildren<Text>();
+        var isCrowdControlShark = potentialTextComponent != null;
+        
         var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
         nameTag.AddComponent<Billboard>();
 
@@ -62,7 +66,15 @@ public class TwitchSharkName: Mod
         var text = nameTag.GetComponentInChildren<TextMeshPro>();
         if (Raft_Network.IsHost)
         {
-            text.text = names.Next();
+            if (isCrowdControlShark)
+            {
+                text.text = potentialTextComponent.text;
+                potentialTextComponent.enabled = false;
+            }
+            else
+            {
+                text.text = names.Next();
+            }
             Debug.Log($"Adding the name: {text.text} to the shark");
         }
 
@@ -101,14 +113,14 @@ public class TwitchSharkName: Mod
     }
 
     [ConsoleCommand(name: "respawnshark", docs: "respawns the shark with a new name [debug/emergency use only]")]
-    public void RespawnCommand(string[] args)
+    public static void RespawnCommand(string[] args)
     {
         KillRandomShark();
         SpawnShark();
         Debug.Log("Respawning the shark");
     }
 
-    private void KillRandomShark()
+    private static void KillRandomShark()
     {
         List<Network_Entity> entities = new List<Network_Entity>();
         foreach (AI_NetworkBehaviour entity in FindObjectsOfType<AI_NetworkBehaviour>())
@@ -126,7 +138,7 @@ public class TwitchSharkName: Mod
             network.SendP2P(network.HostID, message, EP2PSend.k_EP2PSendReliable, NetworkChannel.Channel_Game);
     }
 
-    private void SpawnShark()
+    private static void SpawnShark()
     {
         if (Raft_Network.IsHost)
         {
