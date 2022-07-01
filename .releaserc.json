@@ -28,12 +28,7 @@
       {
         "assets": [
           {
-            "path": [ "CHANGELOG.md" ],
-            "name": "adr-tools-${nextRelease.gitTag}.zip",
-            "label": "ADR-Tools ${nextRelease.gitTag}"
-          },
-          {
-            "path": "TwitchShar.rmod",
+            "path": "TwitchShark.rmod",
             "name": "TwitchShark-${nextRelease.gitTag}.rmod",
             "label": "Twitch Shark mod"
           }
