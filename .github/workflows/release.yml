@@ -31,7 +31,7 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --debug
+        run: npx semantic-release
 
       - uses: actions/upload-artifact@v2
         with:
