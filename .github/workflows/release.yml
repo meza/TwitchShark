@@ -1,4 +1,4 @@
-name: Verify and Release
+name: Build and Release
 
 on: [push]
 
@@ -10,10 +10,17 @@ jobs:
     strategy:
       matrix:
         node-version: [ 18.x ]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
 
       - name: Install zip
         uses: montudor/action-zip@v1
@@ -21,35 +28,15 @@ jobs:
       - name: Zip output
         run: zip -qq -r TwitchShark.rmod . -x '*.csproj' -x '*.rmod' 
         working-directory: TwitchShark
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: TwitchSharkMod
-          path: TwitchShark.rmod
-
-  release:
-    needs: [build]
-    name: Release
-    runs-on: ubuntu-latest
-    if: ${{github.ref == 'ref/head/main'}} || ${{github.ref == 'ref/head/next'}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/download-artifact@v2
-        with:
-          name: TwitchSharkMod
       
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - run: npm i --location=global semantic-release @semantic-release/git @semantic-release/changelog
+      - run: npm i --location=global semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/exec
       
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: TwitchSharkMod
+          path: TwitchShark.rmod
