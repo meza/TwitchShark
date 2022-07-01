@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.1.6](https://github.com/meza/TwitchShark/compare/v1.1.5...v1.1.6) (2022-07-01)
+
+
+### Bug Fixes
+
+* fixed the release ([0b334d0](https://github.com/meza/TwitchShark/commit/0b334d0863080da13ac36977d757cb84c3b71ee7))
+
 ## [1.1.5](https://github.com/meza/TwitchShark/compare/v1.1.4...v1.1.5) (2022-07-01)
 
 
