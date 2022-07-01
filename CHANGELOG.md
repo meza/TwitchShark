@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.1.7](https://github.com/meza/TwitchShark/compare/v1.1.6...v1.1.7) (2022-07-01)
+
+
+### Bug Fixes
+
+* **release:** fixed the artifact location ([560d4d3](https://github.com/meza/TwitchShark/commit/560d4d36d043ef024704274a28d0b223578c7362))
+
 ## [1.1.6](https://github.com/meza/TwitchShark/compare/v1.1.5...v1.1.6) (2022-07-01)
 
 
