@@ -2,15 +2,7 @@
   "branches": [
     "+([0-9])?(.{+([0-9]),x}).x",
     "main",
-    "next",
-    {
-      "name": "beta",
-      "prerelease": true
-    },
-    {
-      "name": "alpha",
-      "prerelease": true
-    }
+    "next"
   ],
   "plugins": [
     "@semantic-release/commit-analyzer",
@@ -39,7 +31,7 @@
           },
           {
             "path": "TwitchShar.rmod",
-            "name": "TwitchShark-${nextRelease.gitTag}",
+            "name": "TwitchShark-${nextRelease.gitTag}.rmod",
             "label": "Twitch Shark mod"
           }
         ]
