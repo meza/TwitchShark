@@ -24,7 +24,7 @@ jobs:
         uses: montudor/action-zip@v1
 
       - name: Zip output
-        run: zip -qq -r TwitchShark.rmod -x *.csproj -x *.rmod TwitchShark
+        run: zip -qq -r TwitchShark.rmod TwitchShark -x '*.csproj' -x '*.rmod' 
 
       - uses: actions/upload-artifact@v2
         with:
@@ -54,4 +54,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --dry-run
+        run: npx semantic-release
