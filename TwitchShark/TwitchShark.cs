@@ -40,12 +40,18 @@ public class TwitchSharkName: Mod
         var token = ExtraSettingsAPI_GetInputValue("twitchToken");
         var channel = ExtraSettingsAPI_GetInputValue("twitchChannel");
 
-        Names.Start(username, token, channel);
+        if (Raft_Network.IsHost)
+        {
+            Names.Start(username, token, channel);
+        }
     }
 
     public void OnModUnload()
     {
-        Names.Stop();
+        if (Raft_Network.IsHost)
+        {
+            Names.Stop();
+        }
         harmonyInstance.UnpatchAll("hu.meza.TwitchSharkName");
         assets.Unload(true);
         Instance = null;
