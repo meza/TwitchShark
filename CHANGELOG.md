@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+# [1.3.0](https://github.com/meza/TwitchShark/compare/v1.2.0...v1.3.0) (2022-07-01)
+
+
+### Features
+
+* added compatibility with Crowd Control ([d424f4e](https://github.com/meza/TwitchShark/commit/d424f4e47ae152ef5d8079dafe89d48960667fc1))
+
 # [1.2.0](https://github.com/meza/TwitchShark/compare/v1.1.9...v1.2.0) (2022-07-01)
 
 
