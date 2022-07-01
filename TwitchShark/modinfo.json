@@ -2,7 +2,7 @@
   "name": "Twitch Shark",
   "author": "Meza",
   "description": "Names the shark after your active chatters",
-  "version": "1.0.0",
+  "version": "VERSION",
   "license": "GPL-3.0",
   "icon": "icon.png",
   "banner": "banner.png",
