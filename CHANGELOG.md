@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+# [1.2.0](https://github.com/meza/TwitchShark/compare/v1.1.9...v1.2.0) (2022-07-01)
+
+
+### Features
+
+* added notifications and reconnection on the change of settings ([ed99f08](https://github.com/meza/TwitchShark/commit/ed99f0894d08249be1573a07381926fd6920a6c0))
+
 ## [1.1.9](https://github.com/meza/TwitchShark/compare/v1.1.8...v1.1.9) (2022-07-01)
 
 
