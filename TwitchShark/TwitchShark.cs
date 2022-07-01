@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 using Steamworks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -11,8 +13,8 @@ public class TwitchSharkName: Mod
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
     public static System.Random rand = new System.Random();
-    public string SharkCurrentlyAttacking;
-    public NameRepository Names;
+    public string sharkCurrentlyAttacking;
+    public NameRepository names = new NameRepository();
 
     private Harmony harmonyInstance;
     private AssetBundle assets;
@@ -29,7 +31,7 @@ public class TwitchSharkName: Mod
         harmonyInstance = new Harmony("hu.meza.TwitchSharkName");
         harmonyInstance.PatchAll();
 
-        Names = new NameRepository();
+        
         Log("Twitch Shark mod loaded");
     }
 
@@ -42,7 +44,7 @@ public class TwitchSharkName: Mod
 
         if (Raft_Network.IsHost)
         {
-            Names.Start(username, token, channel);
+            names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
         }
     }
 
@@ -50,7 +52,7 @@ public class TwitchSharkName: Mod
     {
         if (Raft_Network.IsHost)
         {
-            Names.Stop();
+            names.Stop();
         }
         harmonyInstance.UnpatchAll("hu.meza.TwitchSharkName");
         assets.Unload(true);
@@ -126,7 +128,7 @@ public class TwitchSharkName: Mod
         var text = nameTag.GetComponentInChildren<TextMeshPro>();
         if (Raft_Network.IsHost)
         {
-            text.text = Names.Next();
+            text.text = names.Next();
             Debug.Log($"Adding the name: {text.text} to the shark");
         }
 
@@ -135,5 +137,11 @@ public class TwitchSharkName: Mod
 
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
+
+    public static void OnAsyncMethodFailed(Task task)
+    {
+        Exception ex = task.Exception;
+        Debug.Log(ex);
+    }
 
 }

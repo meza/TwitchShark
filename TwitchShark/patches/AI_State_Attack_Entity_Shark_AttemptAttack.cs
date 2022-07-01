@@ -11,7 +11,7 @@ public static class AI_State_Attack_Entity_Shark_AttemptAttack
             var nametag = ___stateMachineShark.GetComponentInChildren<TextMeshPro>();
             if (nametag != null)
             {
-                TwitchSharkName.Instance.SharkCurrentlyAttacking = nametag.text;
+                TwitchSharkName.Instance.sharkCurrentlyAttacking = nametag.text;
             }
         }
     }
@@ -20,7 +20,7 @@ public static class AI_State_Attack_Entity_Shark_AttemptAttack
     {
         if (Raft_Network.IsHost)
         {
-            TwitchSharkName.Instance.SharkCurrentlyAttacking = null;
+            TwitchSharkName.Instance.sharkCurrentlyAttacking = null;
         }
     }
 }
