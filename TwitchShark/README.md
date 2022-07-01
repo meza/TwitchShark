@@ -2,7 +2,7 @@
 
 Name the shark after your active Twitch chat.
 
-> This mod was inspired by [Dinnerbon's Name Your Shark mod](https://github.com/Dinnerbone/name-your-shark).
+> This mod was inspired by [Dinnerbone's Name Your Shark mod](https://github.com/Dinnerbone/name-your-shark).
 
 Also **BIG SHOUTOUT** to [FranzFischer78](https://www.raftmodding.com/user/FranzFischer78) for bringing me up to speed with Raft mod development.
 
