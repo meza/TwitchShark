@@ -1,0 +1,62 @@
+{
+  "name": "Twitch Shark",
+  "author": "Meza",
+  "description": "Names the shark after your active chatters",
+  "version": "1.0.0",
+  "license": "GPL-3.0",
+  "icon": "icon.png",
+  "banner": "banner.png",
+  "gameVersion": "1.0",
+  "requiredByAllPlayers": true,
+  "updateUrl": "",
+  "isModPermanent": false,
+  "excludedFiles": [],
+  "modSettings": [
+    {
+      "type": "input",
+      "name": "twitchUsername",
+      "text": "Twitch Bot Username",
+      "mode": "Standard"
+    },
+    {
+      "type": "input",
+      "name": "twitchToken",
+      "text": "Twitch Bot Oauth Token",
+      "mode": "Password"
+    },
+    {
+      "type": "input",
+      "name": "twitchChannel",
+      "text": "Twitch Channel to use",
+      "mode": "Standard"
+    },
+    {
+      "type": "checkbox",
+      "name": "twitchSubOnly",
+      "text": "Subscribers Only",
+      "access": "both",
+      "default": false
+    },
+    {
+      "type": "input",
+      "name": "twitchDefaultSharkName",
+      "text": "The default shark name",
+      "mode": "Standard",
+      "default": "CHAT TO NAME ME!"
+    },
+    {
+      "type": "checkbox",
+      "name": "twitchAnnounceToTwitch",
+      "text": "Announce new name to Twitch Chat",
+      "access": "both",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "name": "twitchAnnounceToGame",
+      "text": "Announce new name to Game Chat",
+      "access": "both",
+      "default": true
+    }
+  ]
+}
