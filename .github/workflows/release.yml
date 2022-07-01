@@ -24,10 +24,6 @@ jobs:
 
       - name: Install zip
         uses: montudor/action-zip@v1
-
-      - name: Zip output
-        run: zip -qq -r TwitchShark.rmod . -x '*.csproj' -x '*.rmod' 
-        working-directory: TwitchShark
       
       - run: npm i --location=global semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/exec
       - run: chmod a+x ./scripts/release.sh

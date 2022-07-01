@@ -2,6 +2,7 @@
 
 VERSION=$1
 
-sed -e "s/VERSION/$1/" -i TwitchShark/modinfo.json
+echo "Replacing version with ${VERSION}"
+sed -e "s/VERSION/${VERSION}/" -i TwitchShark/modinfo.json
 (cd TwitchShark && zip -qq -r TwitchShark.rmod . -x '*.csproj' -x '*.rmod')
 
