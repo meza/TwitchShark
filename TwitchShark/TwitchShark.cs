@@ -183,17 +183,17 @@ public class TwitchSharkName: Mod
 
     public static HNotification LoadingNotification(string message)
     {
-        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.spinning, message).SetIcon(HNotify.LoadingSprite);
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.spinning, message, 30, HNotify.LoadingSprite);
     }
 
     public static HNotification ErrorNotification(string message)
     {
-        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 10).SetIcon(HNotify.ErrorSprite);
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 10, HNotify.ErrorSprite);
     }
 
     public static HNotification SuccessNotification(string message)
     {
-        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5).SetIcon(HNotify.CheckSprite);
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5, HNotify.CheckSprite);
     }
 
 }
