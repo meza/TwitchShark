@@ -81,7 +81,7 @@ public class Twitch
         var msg = new TwitchChatMessage
         {
             Sender = command.Tags["display-name"],
-            IsMod = command.Tags["mod"] == "1",
+            IsMod = command.Tags["mod"] == "1" || command.Tags["badges"].Contains("broadcaster"),
             IsSub = command.Tags["subscriber"] == "1",
             Message = command.Message,
             Channel = command.Parameters.TrimStart('#')
@@ -92,7 +92,7 @@ public class Twitch
 
     public async Task Start(CancellationTokenSource cts)
     {
-        Debug.Log("Connecting to twitch");
+        Debug.Log($"Connecting to twitch {cts.ToString()}");
         var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(this.Ip, this.Port);
 
@@ -106,7 +106,7 @@ public class Twitch
         {
             if (cts.IsCancellationRequested)
             {
-                Debug.Log("Stopping Twitch Thread");
+                Debug.Log($"Stopping Twitch Thread {cts.ToString()}");
                 break;
             }
             string line = await streamReader.ReadLineAsync();

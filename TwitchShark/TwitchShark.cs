@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 public class TwitchSharkName : Mod
 {
-    public readonly static string SETTINGS_DATASTORE = "twitchSharkDatastore";
+    public readonly static string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
     public readonly static string SETTINGS_USERNAME = "twitchUsername";
     public readonly static string SETTINGS_TOKEN = "twitchToken";
     public readonly static string SETTINGS_CHANNEL = "twitchChannel";
@@ -27,6 +27,7 @@ public class TwitchSharkName : Mod
     public NameRepository names = new NameRepository();
     private Harmony harmonyInstance;
     private AssetBundle assets;
+    private bool initialised = false;
 
     public IEnumerator Start()
     {
@@ -35,8 +36,6 @@ public class TwitchSharkName : Mod
         AssetBundleCreateRequest request = AssetBundle.LoadFromMemoryAsync(GetEmbeddedFileBytes("twitch-shark-name.assets"));
         yield return request;
         assets = request.assetBundle;
-
-
 
         harmonyInstance = new Harmony("hu.meza.TwitchShark");
         harmonyInstance.PatchAll();
@@ -47,6 +46,8 @@ public class TwitchSharkName : Mod
 
     private void Initialise()
     {
+        if (initialised) return;
+
         var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME);
         var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
         var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL);
@@ -59,7 +60,7 @@ public class TwitchSharkName : Mod
         }
 
         names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
-
+        initialised = true;
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
@@ -100,6 +101,7 @@ public class TwitchSharkName : Mod
         assets.Unload(true);
         Instance = null;
         Log("Twitch Shark Name mod unloaded");
+        initialised = false;
     }
 
     override public void WorldEvent_WorldLoaded()
@@ -175,6 +177,7 @@ public class TwitchSharkName : Mod
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
+        Debug.Log($"Is Host? {Raft_Network.IsHost}");
         if (Raft_Network.IsHost)
         {
             Initialise();
@@ -188,6 +191,7 @@ public class TwitchSharkName : Mod
         {
             names.Stop();
         }
+        initialised = false;
     }
 
     public void ExtraSettingsAPI_SettingsClose()
@@ -196,6 +200,7 @@ public class TwitchSharkName : Mod
         {
             Initialise();
         }
+        initialised = false;
     }
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
