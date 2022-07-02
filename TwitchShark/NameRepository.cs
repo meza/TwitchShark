@@ -25,9 +25,9 @@ public class NameRepository
         client.OnConnection += OnConnection;
 
         client.Start(cts);
-    
+
         await client.JoinChannel(channel);
-        
+
 
     }
 
@@ -65,15 +65,14 @@ public class NameRepository
         if (!ShouldAddMessage(message)) return;
 
         activeChatters.Add(message.Sender);
-        
+
         var msg = $"{message.Sender} just entered the Shark Name Pool";
-        Debug.Log(msg);
 
         if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToTwitch"))
         {
             await client.SendMessage(message.Channel, $"@{msg}");
         }
-        
+
         if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToGame") && TwitchSharkName.InWorld())
         {
             RAPI.BroadcastChatMessage(msg);

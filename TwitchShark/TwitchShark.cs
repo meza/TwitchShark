@@ -23,17 +23,17 @@ public class TwitchSharkName : Mod
     public IEnumerator Start()
     {
         Instance = this;
-        
+
         AssetBundleCreateRequest request = AssetBundle.LoadFromMemoryAsync(GetEmbeddedFileBytes("twitch-shark-name.assets"));
         yield return request;
         assets = request.assetBundle;
-        
-        
+
+
 
         harmonyInstance = new Harmony("hu.meza.TwitchSharkName");
         harmonyInstance.PatchAll();
 
-        
+
         Log("Twitch Shark mod loaded");
     }
 
@@ -43,7 +43,7 @@ public class TwitchSharkName : Mod
         var token = ExtraSettingsAPI_GetInputValue("twitchToken");
         var channel = ExtraSettingsAPI_GetInputValue("twitchChannel");
 
-        if(token == "" || username == "" || channel == "")
+        if (token == "" || username == "" || channel == "")
         {
             Debug.Log("Missing Twitch Details. Please go to Settings");
             FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, "Missing Twitch Details. Please go to Settings", 10, HNotify.ErrorSprite);
@@ -51,13 +51,13 @@ public class TwitchSharkName : Mod
         }
 
         names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
-      
+
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
         var potentialTextComponent = shark.GetComponentInChildren<Text>();
         var isCrowdControlShark = potentialTextComponent != null;
-        
+
         var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
         nameTag.AddComponent<Billboard>();
 
@@ -195,7 +195,7 @@ public class TwitchSharkName : Mod
     public static void OnAsyncMethodFailed(Task task)
     {
         Exception ex = task.Exception;
-        Debug.Log(ex);
+        Debug.LogError(ex);
     }
 
     public static HNotification LoadingNotification(string message)

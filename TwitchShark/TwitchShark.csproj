@@ -40,6 +40,7 @@
     <Compile Include="Billboard.cs" />
     <Compile Include="NameRepository.cs" />
     <Compile Include="Twitch.cs" />
+    <Compile Include="TwitchParser.cs" />
     <Compile Include="TwitchShark.cs" />
     <Compile Include="UpdateSharkNameMessage.cs" />
     <Compile Include="patches\AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch.cs" />
@@ -338,9 +339,6 @@
     <Reference Include="System.ValueTuple.dll">
       <HintPath>C:\Users\meza\AppData\Roaming\RaftModLoader\binaries\System.ValueTuple.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
