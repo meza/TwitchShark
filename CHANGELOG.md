@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+# [1.4.0](https://github.com/meza/TwitchShark/compare/v1.3.1...v1.4.0) (2022-07-02)
+
+
+### Features
+
+* the bot user is excluded from entering the pool ([c7f4c36](https://github.com/meza/TwitchShark/commit/c7f4c3678e1bfa3bff731d77991580da5cba8700))
+
 ## [1.3.1](https://github.com/meza/TwitchShark/compare/v1.3.0...v1.3.1) (2022-07-01)
 
 
