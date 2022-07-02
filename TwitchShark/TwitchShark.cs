@@ -38,7 +38,7 @@ public class TwitchShark : Mod
 
 
 
-        harmonyInstance = new Harmony("hu.meza.TwitchSharkName");
+        harmonyInstance = new Harmony("hu.meza.TwitchShark");
         harmonyInstance.PatchAll();
 
 
@@ -96,7 +96,7 @@ public class TwitchShark : Mod
         {
             names.Stop();
         }
-        harmonyInstance.UnpatchAll("hu.meza.TwitchSharkName");
+        harmonyInstance.UnpatchAll("hu.meza.TwitchShark");
         assets.Unload(true);
         Instance = null;
         Log("Twitch Shark Name mod unloaded");
