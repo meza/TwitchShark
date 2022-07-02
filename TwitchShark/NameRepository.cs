@@ -8,7 +8,7 @@ using static Twitch;
 public class NameRepository
 {
     Twitch client;
-
+    private string username;
     private HNotification connectionNotification;
     private readonly CancellationTokenSource cts = new CancellationTokenSource();
     private readonly System.Collections.Generic.HashSet<string> activeChatters = new System.Collections.Generic.HashSet<string>();
@@ -18,6 +18,7 @@ public class NameRepository
     }
     public async Task Start(String username, String token, String channel)
     {
+        this.username = username;
         connectionNotification = TwitchSharkName.LoadingNotification("Connecting to Twitch");
         client = new Twitch(username, token);
         client.OnMessage += OnMessage;
@@ -32,6 +33,8 @@ public class NameRepository
 
     private bool ShouldAddMessage(TwitchChatMessage message)
     {
+        if (message.Sender.ToLower() == username.ToLower()) return false;
+
         var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchSubOnly");
         if (activeChatters.Contains(message.Sender)) return false;
 
@@ -46,7 +49,7 @@ public class NameRepository
         return true;
     }
 
-    private void OnConnection(object sender, TwitchConnection connection)
+    private async void OnConnection(object sender, TwitchConnection connection)
     {
         connectionNotification.Close();
         if (connection.Success == true)
@@ -57,7 +60,7 @@ public class NameRepository
 
         TwitchSharkName.ErrorNotification("Could not connect to Twitch. Please check your settings.");
     }
-    private void OnMessage(object sender, TwitchChatMessage message)
+    private async void OnMessage(object sender, TwitchChatMessage message)
     {
         if (!ShouldAddMessage(message)) return;
 
@@ -68,10 +71,10 @@ public class NameRepository
 
         if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToTwitch"))
         {
-            client.SendMessage(message.Channel, $"@{msg}");
+            await client.SendMessage(message.Channel, $"@{msg}");
         }
         
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToGame"))
+        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToGame") && TwitchSharkName.InWorld())
         {
             RAPI.BroadcastChatMessage(msg);
         }

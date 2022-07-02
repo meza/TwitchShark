@@ -8,25 +8,27 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TwitchSharkName: Mod
+public class TwitchSharkName : Mod
 {
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
     public static System.Random rand = new System.Random();
     public string sharkCurrentlyAttacking;
+    private static bool inWorld = false;
     public NameRepository names = new NameRepository();
     private Harmony harmonyInstance;
     private AssetBundle assets;
 
     public IEnumerator Start()
     {
-
         Instance = this;
-
+        
         AssetBundleCreateRequest request = AssetBundle.LoadFromMemoryAsync(GetEmbeddedFileBytes("twitch-shark-name.assets"));
         yield return request;
         assets = request.assetBundle;
+        
+        
 
         harmonyInstance = new Harmony("hu.meza.TwitchSharkName");
         harmonyInstance.PatchAll();
@@ -90,6 +92,21 @@ public class TwitchSharkName: Mod
         assets.Unload(true);
         Instance = null;
         Log("Twitch Shark Name mod unloaded");
+    }
+
+    override public void WorldEvent_WorldLoaded()
+    {
+        inWorld = true;
+    }
+
+    override public void WorldEvent_WorldUnloaded()
+    {
+        inWorld = false;
+    }
+
+    public static bool InWorld()
+    {
+        return inWorld;
     }
 
     public void FixedUpdate()

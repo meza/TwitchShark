@@ -52,12 +52,13 @@ class Twitch
 
         while (true)
         {
-            if (cts.IsCancellationRequested)
+        if (cts.IsCancellationRequested)
             {
                 Debug.Log("Stopping Twitch Thread");
                 break;
             }
             string line = await streamReader.ReadLineAsync();
+            Debug.Log(line);
             string[] split = line.Split(' ');
             if (line.StartsWith("PING"))
             {
