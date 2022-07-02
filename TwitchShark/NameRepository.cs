@@ -35,7 +35,7 @@ public class NameRepository
     {
         if (message.Sender.ToLower() == username.ToLower()) return false;
 
-        var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchSubOnly");
+        var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_SUB_ONLY);
         if (activeChatters.Contains(message.Sender)) return false;
 
         if (subOnly)
@@ -68,12 +68,12 @@ public class NameRepository
 
         var msg = $"{message.Sender} just entered the Shark Name Pool";
 
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToTwitch"))
+        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
         {
             await client.SendMessage(message.Channel, $"@{msg}");
         }
 
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState("twitchAnnounceToGame") && TwitchSharkName.InWorld())
+        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_GAME) && TwitchSharkName.InWorld())
         {
             RAPI.BroadcastChatMessage(msg);
         }
@@ -84,7 +84,7 @@ public class NameRepository
     {
         if (activeChatters.Count == 0)
         {
-            return TwitchSharkName.ExtraSettingsAPI_GetInputValue("twitchDefaultSharkName");
+            return TwitchSharkName.ExtraSettingsAPI_GetInputValue(TwitchSharkName.SETTINGS_DEFAULT_SHARK_NAME);
         }
 
         var random = new System.Random();

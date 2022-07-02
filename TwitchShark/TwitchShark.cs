@@ -10,6 +10,14 @@ using UnityEngine.UI;
 
 public class TwitchSharkName : Mod
 {
+    public readonly static string SETTINGS_DATASTORE = "twitchSharkDatastore";
+    public readonly static string SETTINGS_USERNAME = "twitchUsername";
+    public readonly static string SETTINGS_TOKEN = "twitchToken";
+    public readonly static string SETTINGS_CHANNEL = "twitchChannel";
+    public readonly static string SETTINGS_DEFAULT_SHARK_NAME = "twitchDefaultSharkName";
+    public readonly static string SETTINGS_SUB_ONLY = "twitchSubOnly";
+    public readonly static string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
+    public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
@@ -39,9 +47,9 @@ public class TwitchSharkName : Mod
 
     private void Initialise()
     {
-        var username = ExtraSettingsAPI_GetInputValue("twitchUsername");
-        var token = ExtraSettingsAPI_GetInputValue("twitchToken");
-        var channel = ExtraSettingsAPI_GetInputValue("twitchChannel");
+        var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME);
+        var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL);
 
         if (token == "" || username == "" || channel == "")
         {
@@ -191,7 +199,10 @@ public class TwitchSharkName : Mod
     }
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
-
+    public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
+    public static void ExtraSettingsAPI_SetDataValues(string SettingName, Dictionary<string, string> values) { }
+    public static string ExtraSettingsAPI_GetDataValue(string SettingName, string subname) => "";
+    public static string[] ExtraSettingsAPI_GetDataNames(string SettingName) => new string[0];
     public static void OnAsyncMethodFailed(Task task)
     {
         Exception ex = task.Exception;

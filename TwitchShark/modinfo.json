@@ -57,6 +57,11 @@
       "text": "Announce new name to Game Chat",
       "access": "both",
       "default": true
+    },
+    {
+      "type": "data",
+      "name": "twitchSharkDatastore",
+      "access": "both"
     }
   ]
 }
