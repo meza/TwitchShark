@@ -7,9 +7,9 @@ public static class PlayerStats_Damage_Patch
     {
         if (Raft_Network.IsHost && __instance.IsDead)
         {
-            if (TwitchShark.Instance.sharkCurrentlyAttacking != null)
+            if (TwitchSharkName.Instance.sharkCurrentlyAttacking != null)
             {
-                RAPI.BroadcastChatMessage($"{___playerNetwork.characterSettings.Name} was eaten by {TwitchShark.Instance.sharkCurrentlyAttacking}");
+                RAPI.BroadcastChatMessage($"{___playerNetwork.characterSettings.Name} was eaten by {TwitchSharkName.Instance.sharkCurrentlyAttacking}");
             }
         }
     }

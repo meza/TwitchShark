@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TwitchShark : Mod
+public class TwitchSharkName : Mod
 {
     public readonly static string SETTINGS_DATASTORE = "twitchSharkDatastore";
     public readonly static string SETTINGS_USERNAME = "twitchUsername";
@@ -20,7 +20,7 @@ public class TwitchShark : Mod
     public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
-    public static TwitchShark Instance;
+    public static TwitchSharkName Instance;
     public static System.Random rand = new System.Random();
     public string sharkCurrentlyAttacking;
     private static bool inWorld = false;
