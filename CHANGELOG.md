@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+# [1.5.0](https://github.com/meza/TwitchShark/compare/v1.4.0...v1.5.0) (2022-07-02)
+
+
+### Features
+
+* added twitch commands for black and whitelisting ([e44c3f0](https://github.com/meza/TwitchShark/commit/e44c3f05c2e69a6f96be49b175b531554bc16056))
+
 # [1.4.0](https://github.com/meza/TwitchShark/compare/v1.3.1...v1.4.0) (2022-07-02)
 
 
