@@ -11,11 +11,11 @@ public static class AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch
             var nametag = __instance.stateMachineShark.GetComponentInChildren<TextMeshPro>();
             if (nametag == null)
             {
-                nametag = TwitchSharkName.Instance.AddNametag(__instance.stateMachineShark);
+                nametag = TwitchShark.Instance.AddNametag(__instance.stateMachineShark);
             }
 
             var name = nametag.text;
-            RAPI.SendNetworkMessage(new UpdateSharkNameMessage(TwitchSharkName.MESSAGE_TYPE_SET_NAME, __instance.ObjectIndex, name), channel: TwitchSharkName.CHANNEL_ID);
+            RAPI.SendNetworkMessage(new UpdateSharkNameMessage(TwitchShark.MESSAGE_TYPE_SET_NAME, __instance.ObjectIndex, name), channel: TwitchShark.CHANNEL_ID);
         }
     }
 }

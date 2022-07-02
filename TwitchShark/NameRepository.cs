@@ -19,7 +19,7 @@ public class NameRepository
     public async Task Start(String username, String token, String channel)
     {
         this.username = username;
-        connectionNotification = TwitchSharkName.LoadingNotification("Connecting to Twitch");
+        connectionNotification = TwitchShark.LoadingNotification("Connecting to Twitch");
         client = new Twitch(username, token);
         client.OnMessage += OnMessage;
         client.OnConnection += OnConnection;
@@ -35,7 +35,7 @@ public class NameRepository
     {
         if (message.Sender.ToLower() == username.ToLower()) return false;
 
-        var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_SUB_ONLY);
+        var subOnly = TwitchShark.ExtraSettingsAPI_GetCheckboxState(TwitchShark.SETTINGS_SUB_ONLY);
         if (activeChatters.Contains(message.Sender)) return false;
 
         if (subOnly)
@@ -54,11 +54,11 @@ public class NameRepository
         connectionNotification.Close();
         if (connection.Success == true)
         {
-            TwitchSharkName.SuccessNotification("Connected to Twitch");
+            TwitchShark.SuccessNotification("Connected to Twitch");
             return;
         }
 
-        TwitchSharkName.ErrorNotification("Could not connect to Twitch. Please check your settings.");
+        TwitchShark.ErrorNotification("Could not connect to Twitch. Please check your settings.");
     }
     private async void OnMessage(object sender, TwitchChatMessage message)
     {
@@ -68,12 +68,12 @@ public class NameRepository
 
         var msg = $"{message.Sender} just entered the Shark Name Pool";
 
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
+        if (TwitchShark.ExtraSettingsAPI_GetCheckboxState(TwitchShark.SETTINGS_ANNOUNCE_TWITCH))
         {
             await client.SendMessage(message.Channel, $"@{msg}");
         }
 
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_GAME) && TwitchSharkName.InWorld())
+        if (TwitchShark.ExtraSettingsAPI_GetCheckboxState(TwitchShark.SETTINGS_ANNOUNCE_GAME) && TwitchShark.InWorld())
         {
             RAPI.BroadcastChatMessage(msg);
         }
@@ -84,7 +84,7 @@ public class NameRepository
     {
         if (activeChatters.Count == 0)
         {
-            return TwitchSharkName.ExtraSettingsAPI_GetInputValue(TwitchSharkName.SETTINGS_DEFAULT_SHARK_NAME);
+            return TwitchShark.ExtraSettingsAPI_GetInputValue(TwitchShark.SETTINGS_DEFAULT_SHARK_NAME);
         }
 
         var random = new System.Random();
