@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.3.1](https://github.com/meza/TwitchShark/compare/v1.3.0...v1.3.1) (2022-07-01)
+
+
+### Bug Fixes
+
+* fixed the endless notification for the connecting state ([b585162](https://github.com/meza/TwitchShark/commit/b585162bef770955ee065e82606b8ba7ac81b9e5))
+
 # [1.3.0](https://github.com/meza/TwitchShark/compare/v1.2.0...v1.3.0) (2022-07-01)
 
 
