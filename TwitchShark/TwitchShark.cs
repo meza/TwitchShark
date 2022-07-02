@@ -6,41 +6,53 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class TwitchSharkName: Mod
+public class TwitchSharkName : Mod
 {
+    public readonly static string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
+    public readonly static string SETTINGS_USERNAME = "twitchUsername";
+    public readonly static string SETTINGS_TOKEN = "twitchToken";
+    public readonly static string SETTINGS_CHANNEL = "twitchChannel";
+    public readonly static string SETTINGS_DEFAULT_SHARK_NAME = "twitchDefaultSharkName";
+    public readonly static string SETTINGS_SUB_ONLY = "twitchSubOnly";
+    public readonly static string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
+    public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
     public static System.Random rand = new System.Random();
     public string sharkCurrentlyAttacking;
+    private static bool inWorld = false;
     public NameRepository names = new NameRepository();
     private Harmony harmonyInstance;
     private AssetBundle assets;
+    private bool initialised = false;
 
     public IEnumerator Start()
     {
-
         Instance = this;
 
         AssetBundleCreateRequest request = AssetBundle.LoadFromMemoryAsync(GetEmbeddedFileBytes("twitch-shark-name.assets"));
         yield return request;
         assets = request.assetBundle;
 
-        harmonyInstance = new Harmony("hu.meza.TwitchSharkName");
+        harmonyInstance = new Harmony("hu.meza.TwitchShark");
         harmonyInstance.PatchAll();
 
-        
+
         Log("Twitch Shark mod loaded");
     }
 
     private void Initialise()
     {
-        var username = ExtraSettingsAPI_GetInputValue("twitchUsername");
-        var token = ExtraSettingsAPI_GetInputValue("twitchToken");
-        var channel = ExtraSettingsAPI_GetInputValue("twitchChannel");
+        if (initialised) return;
 
-        if(token == "" || username == "" || channel == "")
+        var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME);
+        var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL);
+
+        if (token == "" || username == "" || channel == "")
         {
             Debug.Log("Missing Twitch Details. Please go to Settings");
             FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, "Missing Twitch Details. Please go to Settings", 10, HNotify.ErrorSprite);
@@ -48,10 +60,13 @@ public class TwitchSharkName: Mod
         }
 
         names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
-      
+        initialised = true;
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
+        var potentialTextComponent = shark.GetComponentInChildren<Text>();
+        var isCrowdControlShark = potentialTextComponent != null;
+
         var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
         nameTag.AddComponent<Billboard>();
 
@@ -62,7 +77,15 @@ public class TwitchSharkName: Mod
         var text = nameTag.GetComponentInChildren<TextMeshPro>();
         if (Raft_Network.IsHost)
         {
-            text.text = names.Next();
+            if (isCrowdControlShark)
+            {
+                text.text = potentialTextComponent.text;
+                potentialTextComponent.enabled = false;
+            }
+            else
+            {
+                text.text = names.Next();
+            }
             Debug.Log($"Adding the name: {text.text} to the shark");
         }
 
@@ -74,10 +97,26 @@ public class TwitchSharkName: Mod
         {
             names.Stop();
         }
-        harmonyInstance.UnpatchAll("hu.meza.TwitchSharkName");
+        harmonyInstance.UnpatchAll("hu.meza.TwitchShark");
         assets.Unload(true);
         Instance = null;
         Log("Twitch Shark Name mod unloaded");
+        initialised = false;
+    }
+
+    override public void WorldEvent_WorldLoaded()
+    {
+        inWorld = true;
+    }
+
+    override public void WorldEvent_WorldUnloaded()
+    {
+        inWorld = false;
+    }
+
+    public static bool InWorld()
+    {
+        return inWorld;
     }
 
     public void FixedUpdate()
@@ -101,14 +140,14 @@ public class TwitchSharkName: Mod
     }
 
     [ConsoleCommand(name: "respawnshark", docs: "respawns the shark with a new name [debug/emergency use only]")]
-    public void RespawnCommand(string[] args)
+    public static void RespawnCommand(string[] args)
     {
         KillRandomShark();
         SpawnShark();
         Debug.Log("Respawning the shark");
     }
 
-    private void KillRandomShark()
+    private static void KillRandomShark()
     {
         List<Network_Entity> entities = new List<Network_Entity>();
         foreach (AI_NetworkBehaviour entity in FindObjectsOfType<AI_NetworkBehaviour>())
@@ -126,7 +165,7 @@ public class TwitchSharkName: Mod
             network.SendP2P(network.HostID, message, EP2PSend.k_EP2PSendReliable, NetworkChannel.Channel_Game);
     }
 
-    private void SpawnShark()
+    private static void SpawnShark()
     {
         if (Raft_Network.IsHost)
         {
@@ -138,6 +177,7 @@ public class TwitchSharkName: Mod
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
+        Debug.Log($"Is Host? {Raft_Network.IsHost}");
         if (Raft_Network.IsHost)
         {
             Initialise();
@@ -151,6 +191,7 @@ public class TwitchSharkName: Mod
         {
             names.Stop();
         }
+        initialised = false;
     }
 
     public void ExtraSettingsAPI_SettingsClose()
@@ -159,29 +200,33 @@ public class TwitchSharkName: Mod
         {
             Initialise();
         }
+        initialised = false;
     }
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
-
+    public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
+    public static void ExtraSettingsAPI_SetDataValues(string SettingName, Dictionary<string, string> values) { }
+    public static string ExtraSettingsAPI_GetDataValue(string SettingName, string subname) => "";
+    public static string[] ExtraSettingsAPI_GetDataNames(string SettingName) => new string[0];
     public static void OnAsyncMethodFailed(Task task)
     {
         Exception ex = task.Exception;
-        Debug.Log(ex);
+        Debug.LogError(ex);
     }
 
     public static HNotification LoadingNotification(string message)
     {
-        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.spinning, message).SetIcon(HNotify.LoadingSprite);
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.spinning, message, 30, HNotify.LoadingSprite);
     }
 
     public static HNotification ErrorNotification(string message)
     {
-        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 10).SetIcon(HNotify.ErrorSprite);
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 10, HNotify.ErrorSprite);
     }
 
     public static HNotification SuccessNotification(string message)
     {
-        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5).SetIcon(HNotify.CheckSprite);
+        return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5, HNotify.CheckSprite);
     }
 
 }

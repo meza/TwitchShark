@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-class Twitch
+public class Twitch
 {
     private readonly String Username;
     private readonly String Token;
     readonly string Ip = "irc.chat.twitch.tv";
     readonly int Port = 6667;
+    private TwitchParser parser = new TwitchParser();
     private StreamReader streamReader;
     private StreamWriter streamWriter;
     private TaskCompletionSource<int> connected = new TaskCompletionSource<int>();
@@ -19,9 +21,17 @@ class Twitch
     public delegate void TwitchChatEventHandler(object sender, TwitchChatMessage e);
     public delegate void TwitchConnectionEventHandler(object sender, TwitchConnection e);
 
-    public class TwitchConnection: EventArgs
+    public class TwitchConnection : EventArgs
     {
         public bool Success { get; set; }
+    }
+    public class TwitchCommand
+    {
+        public string Command { get; set; }
+        public string Message { get; set; }
+        public string Parameters { get; set; }
+        public string Hostmask { get; set; }
+        public Dictionary<string, string> Tags { get; set; }
     }
     public class TwitchChatMessage : EventArgs
     {
@@ -38,9 +48,51 @@ class Twitch
         this.Token = token;
     }
 
+    private async void OnPing(TwitchCommand command)
+    {
+        await streamWriter.WriteLineAsync($"PONG {command.Message}");
+    }
+
+    private async void OnConnectedMessage(TwitchCommand command)
+    {
+        connected.SetResult(0);
+        Debug.Log("Connected to twitch");
+        OnConnection(this, new TwitchConnection
+        {
+            Success = true
+        });
+    }
+
+    private async void OnNotice(TwitchCommand command, CancellationTokenSource cts)
+    {
+        var message = command.Message.ToLower();
+        if (message == "login authentication failed" || message == "improperly formatted auth")
+        {
+            OnConnection(this, new TwitchConnection
+            {
+                Success = false
+            });
+            cts.Cancel();
+        }
+    }
+
+    private async void OnPRIVMessage(TwitchCommand command)
+    {
+        var msg = new TwitchChatMessage
+        {
+            Sender = command.Tags["display-name"],
+            IsMod = command.Tags["mod"] == "1" || command.Tags["badges"].Contains("broadcaster"),
+            IsSub = command.Tags["subscriber"] == "1",
+            Message = command.Message,
+            Channel = command.Parameters.TrimStart('#')
+        };
+
+        OnMessage(this, msg);
+    }
+
     public async Task Start(CancellationTokenSource cts)
     {
-        Debug.Log("Connecting to twitch");
+        Debug.Log($"Connecting to twitch {cts.ToString()}");
         var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(this.Ip, this.Port);
 
@@ -54,69 +106,28 @@ class Twitch
         {
             if (cts.IsCancellationRequested)
             {
-                Debug.Log("Stopping Twitch Thread");
+                Debug.Log($"Stopping Twitch Thread {cts.ToString()}");
                 break;
             }
             string line = await streamReader.ReadLineAsync();
-            string[] split = line.Split(' ');
-            if (line.StartsWith("PING"))
+            var command = parser.Parse(line);
+
+            switch (command.Command)
             {
-                Console.WriteLine("PING");
-                await streamWriter.WriteLineAsync($"PONG {split[1]}");
-            }
-
-            if (split.Length > 1 && split[1] == "001") {
-                connected.SetResult(0);
-                Debug.Log("Connected to twitch");
-                OnConnection(this, new TwitchConnection
-                {
-                    Success = true
-                });
-            }
-
-            if (split.Length > 3 && split[1] == "NOTICE")
-            {
-                var colonPosition = line.IndexOf(':', 1);
-                var message = line.Substring(colonPosition + 1).ToLower();
-
-                if(message == "login authentication failed" || message == "improperly formatted auth")
-                {
-                    OnConnection(this, new TwitchConnection
-                    {
-                        Success = false
-                    });
-                    cts.Cancel();
-                }
-
-            }
-            if (split.Length > 3 && split[2] == "PRIVMSG")
-            {
-              
-                var parts = split[0].Split(';');
-                var msg = new TwitchChatMessage();
-                Array.ForEach(parts, (part) =>
-                {
-                    var subparts = part.Split('=');
-                    if (subparts[0] == "display-name")
-                    {
-                        msg.Sender = subparts[1];
-                    }
-
-                    if (subparts[0] == "subscriber")
-                    {
-                        msg.IsSub = subparts[1] == "1";
-                    }
-
-                    if (subparts[0] == "mod")
-                    {
-                        msg.IsMod = subparts[1] == "1";
-                    }
-                });
-
-                int secondColonPosition = split[4].IndexOf(':');
-                msg.Message = split[4].Substring(secondColonPosition + 1);
-                msg.Channel = split[3].TrimStart('#');
-                OnMessage(this, msg);
+                case "PING":
+                    OnPing(command);
+                    break;
+                case "001":
+                    OnConnectedMessage(command);
+                    break;
+                case "NOTICE":
+                    OnNotice(command, cts);
+                    break;
+                case "PRIVMSG":
+                    OnPRIVMessage(command);
+                    break;
+                case "RECONECT":
+                    break;
             }
         }
 
@@ -129,11 +140,8 @@ class Twitch
 
     public async Task JoinChannel(string channel)
     {
-        Debug.Log($"Will join #{channel} when the connection is ready");
         await connected.Task;
-        Debug.Log("Requesting capabilities");
         await streamWriter.WriteLineAsync("CAP REQ :twitch.tv/commands twitch.tv/tags");
-        Debug.Log("Capabilities Sent");
         await streamWriter.WriteLineAsync($"JOIN #{channel}");
         Debug.Log($"Joined #{channel}");
 

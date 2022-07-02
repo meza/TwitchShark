@@ -13,6 +13,7 @@ public static class AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch
             {
                 nametag = TwitchSharkName.Instance.AddNametag(__instance.stateMachineShark);
             }
+
             var name = nametag.text;
             RAPI.SendNetworkMessage(new UpdateSharkNameMessage(TwitchSharkName.MESSAGE_TYPE_SET_NAME, __instance.ObjectIndex, name), channel: TwitchSharkName.CHANNEL_ID);
         }

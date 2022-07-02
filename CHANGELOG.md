@@ -1,5 +1,33 @@
 # Twitch Shark Changelog
 
+# [1.5.0](https://github.com/meza/TwitchShark/compare/v1.4.0...v1.5.0) (2022-07-02)
+
+
+### Features
+
+* added twitch commands for black and whitelisting ([e44c3f0](https://github.com/meza/TwitchShark/commit/e44c3f05c2e69a6f96be49b175b531554bc16056))
+
+# [1.4.0](https://github.com/meza/TwitchShark/compare/v1.3.1...v1.4.0) (2022-07-02)
+
+
+### Features
+
+* the bot user is excluded from entering the pool ([c7f4c36](https://github.com/meza/TwitchShark/commit/c7f4c3678e1bfa3bff731d77991580da5cba8700))
+
+## [1.3.1](https://github.com/meza/TwitchShark/compare/v1.3.0...v1.3.1) (2022-07-01)
+
+
+### Bug Fixes
+
+* fixed the endless notification for the connecting state ([b585162](https://github.com/meza/TwitchShark/commit/b585162bef770955ee065e82606b8ba7ac81b9e5))
+
+# [1.3.0](https://github.com/meza/TwitchShark/compare/v1.2.0...v1.3.0) (2022-07-01)
+
+
+### Features
+
+* added compatibility with Crowd Control ([d424f4e](https://github.com/meza/TwitchShark/commit/d424f4e47ae152ef5d8079dafe89d48960667fc1))
+
 # [1.2.0](https://github.com/meza/TwitchShark/compare/v1.1.9...v1.2.0) (2022-07-01)
 
 
