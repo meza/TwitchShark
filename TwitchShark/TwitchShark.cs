@@ -105,7 +105,7 @@ public class TwitchSharkName : Mod
             Initialise();
         } else
         {
-            SuccessNotification("You are joining a session with Twitch Shark enabled. You don't have to set anything up, just have fun!");
+            SuccessNotification("Twitch Shark enabled on host. Have fun!");
         }
     }
 
