@@ -19,6 +19,10 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
     public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
     public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
+    public readonly static string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
+    public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
+    static bool ExtraSettingsAPI_Loaded = false;
+    public readonly static string DEFAULT_COLOR = "#BB7C6A";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
@@ -46,6 +50,12 @@ public class TwitchSharkName : Mod
 
     private void Initialise(bool isTest = false)
     {
+        if (Raft_Network.IsHost && !ExtraSettingsAPI_Loaded)
+        {
+            ErrorNotification("Twitch Shark can't start.\nThe Extra Settings Mod is missing.");
+            return;
+        }
+
         var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME);
         var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
         var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL);
@@ -81,7 +91,14 @@ public class TwitchSharkName : Mod
             }
             else
             {
-                text.text = names.Next();
+                var user = names.Next();
+                text.text = user.Username;
+                text.color = GetColorFromHex(DEFAULT_COLOR);
+
+                if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_USE_COLORS))
+                {
+                    text.color = user.Color;
+                }
             }
             Debug.Log($"Adding the name: {text.text} to the shark");
         }
@@ -103,9 +120,10 @@ public class TwitchSharkName : Mod
         if (Raft_Network.IsHost)
         {
             Initialise();
-        } else
+        }
+        else
         {
-            SuccessNotification("You are joining a session with Twitch Shark enabled. You don't have to set anything up, just have fun!");
+            SuccessNotification("Twitch Shark enabled on host. Have fun!");
         }
     }
 
@@ -114,6 +132,7 @@ public class TwitchSharkName : Mod
         inWorld = false;
         if (Raft_Network.IsHost)
         {
+            Debug.Log("World Unloaded");
             names.Stop();
         }
     }
@@ -121,6 +140,19 @@ public class TwitchSharkName : Mod
     public static bool InWorld()
     {
         return inWorld;
+    }
+
+    public static Color GetColorFromHex(string hex)
+    {
+        Color result;
+        var success = ColorUtility.TryParseHtmlString(hex, out result);
+
+        if (!success)
+        {
+            ColorUtility.TryParseHtmlString(TwitchSharkName.DEFAULT_COLOR, out result);
+        }
+
+        return result;
     }
 
     public void FixedUpdate()
@@ -184,14 +216,6 @@ public class TwitchSharkName : Mod
 
     }
 
-    public void ExtraSettingsAPI_SettingsOpen()
-    {
-        if (Raft_Network.IsHost)
-        {
-            names.Stop();
-        }
-    }
-
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
     public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
@@ -203,6 +227,26 @@ public class TwitchSharkName : Mod
         if (name == SETTINGS_TEST_TWITCH_BUTTON)
         {
             Initialise(true);
+            return;
+        }
+
+        if (name == SETTINGS_RECONNECT_BUTTON)
+        {
+            if (!inWorld)
+            {
+                ErrorNotification("Need to be in a session to connect to Twitch");
+                return;
+            }
+
+            if (!Raft_Network.IsHost)
+            {
+                ErrorNotification("Only the Host can connect to Twitch");
+                return;
+            }
+
+            names.Stop();
+            Initialise();
+            return;
         }
     }
     public static void OnAsyncMethodFailed(Task task)
