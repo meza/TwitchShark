@@ -115,6 +115,10 @@ public class Twitch
             {
                 cts.Token.ThrowIfCancellationRequested();
                 string line = await streamReader.ReadLineAsync();
+                if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+                {
+                    Debug.Log($"Received message: {line}");
+                }
                 cts.Token.ThrowIfCancellationRequested();
                 if (line == null) continue;
 
@@ -143,6 +147,13 @@ public class Twitch
         catch (OperationCanceledException e)
         {
             Debug.Log($"Twitch disconnect requested for thread: {e.CancellationToken.GetHashCode()}");
+        }
+        catch (ObjectDisposedException e)
+        {
+            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            {
+                Debug.Log("Already cancelled, no need to worry");
+            }
         }
         catch (IOException e)
         {
