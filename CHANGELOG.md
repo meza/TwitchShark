@@ -1,5 +1,13 @@
 # Twitch Shark Changelog
 
+## [1.6.2](https://github.com/meza/TwitchShark/compare/v1.6.1...v1.6.2) (2022-07-03)
+
+
+### Bug Fixes
+
+* added a debug option to see raw messages if needed ([0e024e2](https://github.com/meza/TwitchShark/commit/0e024e2ef5388ee0483af883041416c8e54a42b3))
+* added version to the mod string ([86e3cb3](https://github.com/meza/TwitchShark/commit/86e3cb336f8c8382e5ecd4ca72c2fc9fcc0c11d5))
+
 ## [1.6.1](https://github.com/meza/TwitchShark/compare/v1.6.0...v1.6.1) (2022-07-03)
 
 
