@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.6.1](https://github.com/meza/TwitchShark/compare/v1.6.0...v1.6.1) (2022-07-03)
+
+
+### Bug Fixes
+
+* fixed the chat issues ([92283bb](https://github.com/meza/TwitchShark/commit/92283bb713a0a485ba907429544e007619895708))
+
 # [1.6.0](https://github.com/meza/TwitchShark/compare/v1.5.1...v1.6.0) (2022-07-03)
 
 
