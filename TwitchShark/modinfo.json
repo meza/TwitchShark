@@ -31,18 +31,18 @@
       "mode": "Standard"
     },
     {
-      "type": "checkbox",
-      "name": "twitchSubOnly",
-      "text": "Subscribers Only",
-      "access": "both",
-      "default": false
-    },
-    {
       "type": "input",
       "name": "twitchDefaultSharkName",
       "text": "The default shark name",
       "mode": "Standard",
       "default": "CHAT TO NAME ME!"
+    },
+    {
+      "type": "checkbox",
+      "name": "twitchSubOnly",
+      "text": "Subscribers Only",
+      "access": "both",
+      "default": false
     },
     {
       "type": "checkbox",
@@ -55,6 +55,13 @@
       "type": "checkbox",
       "name": "twitchAnnounceToGame",
       "text": "Announce new name to Game Chat",
+      "access": "both",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "name": "twitchSharkUseChatColors",
+      "text": "Use the colors from chat",
       "access": "both",
       "default": true
     },
