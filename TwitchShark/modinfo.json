@@ -75,6 +75,11 @@
       "type": "button",
       "name": "twitchSharkTestTwitch",
       "text": "Test Connection"
+    },
+    {
+      "type": "button",
+      "name": "twitchSharkReconnect",
+      "text": "Reconnect"
     }
   ]
 }

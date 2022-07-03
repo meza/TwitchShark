@@ -19,6 +19,7 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
     public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
     public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
+    public readonly static string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
     public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
     static bool ExtraSettingsAPI_Loaded = false;
     public readonly static string DEFAULT_COLOR = "#BB7C6A";
@@ -215,22 +216,6 @@ public class TwitchSharkName : Mod
 
     }
 
-    public void ExtraSettingsAPI_SettingsClose()
-    {
-        if (Raft_Network.IsHost && inWorld)
-        {
-            Initialise();
-        }
-    }
-    public void ExtraSettingsAPI_SettingsOpen()
-    {
-        if (Raft_Network.IsHost)
-        {
-            Debug.Log("Settings Opened, Stopping");
-            names.Stop();
-        }
-    }
-
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
     public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
@@ -242,6 +227,26 @@ public class TwitchSharkName : Mod
         if (name == SETTINGS_TEST_TWITCH_BUTTON)
         {
             Initialise(true);
+            return;
+        }
+
+        if (name == SETTINGS_RECONNECT_BUTTON)
+        {
+            if (!inWorld)
+            {
+                ErrorNotification("Need to be in a session to connect to Twitch");
+                return;
+            }
+
+            if (!Raft_Network.IsHost)
+            {
+                ErrorNotification("Only the Host can connect to Twitch");
+                return;
+            }
+
+            names.Stop();
+            Initialise();
+            return;
         }
     }
     public static void OnAsyncMethodFailed(Task task)
