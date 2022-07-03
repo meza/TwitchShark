@@ -2,3 +2,6 @@
 *.rmod
 obj
 bin
+AssetBundle/Library/
+AssetBundle/Logs/
+AssetBundle/ProjectSettings/*.asset

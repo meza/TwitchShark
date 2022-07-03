@@ -11,22 +11,30 @@ public class NameRepository
     Twitch client;
     private string username;
     private HNotification connectionNotification;
-    private readonly CancellationTokenSource cts = new CancellationTokenSource();
-    private readonly HashSet<string> activeChatters = new HashSet<string>();
+    private CancellationTokenSource cts;
+    private readonly Dictionary<string, Color> activeChattersWithColours = new Dictionary<string, Color>();
     private HashSet<string> blacklist;
+    private bool isTest = false;
     public void Stop()
     {
-        cts.Cancel();
+        Debug.Log("Stop requested");
+        if (cts.Token.CanBeCanceled)
+        {
+            cts.Cancel();
+        }
     }
 
-    public async Task Start(String username, String token, String channel)
+    public async Task Start(String username, String token, String channel, bool isTest = false)
     {
+        this.isTest = isTest;
         blacklist = new HashSet<string>(TwitchSharkName.ExtraSettingsAPI_GetDataNames(TwitchSharkName.SETTINGS_BLACKLIST));
         this.username = username;
-        connectionNotification = TwitchSharkName.LoadingNotification("Connecting to Twitch");
+        var msg = isTest ? "Testing Twitch Connection" : "Connecting to Twitch";
+        connectionNotification = TwitchSharkName.LoadingNotification(msg);
         client = new Twitch(username, token);
         client.OnMessage += OnMessage;
         client.OnConnection += OnConnection;
+        cts = new CancellationTokenSource();
         client.Start(cts);
 
         await client.JoinChannel(channel);
@@ -34,11 +42,11 @@ public class NameRepository
 
     private bool ShouldAddName(TwitchChatMessage message)
     {
-        if (message.Sender.ToLower() == username.ToLower()) return false;
-        if (blacklist.Contains(message.Sender.ToLower())) return false;
+        if (message.Sender.Username.ToLower() == username.ToLower()) return false;
+        if (blacklist.Contains(message.Sender.Username.ToLower())) return false;
 
         var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_SUB_ONLY);
-        if (activeChatters.Contains(message.Sender)) return false;
+        if (activeChattersWithColours.Keys.Contains(message.Sender.Username)) return false;
 
         if (subOnly)
         {
@@ -57,6 +65,11 @@ public class NameRepository
         if (connection.Success == true)
         {
             TwitchSharkName.SuccessNotification("Connected to Twitch");
+            if (isTest)
+            {
+                Debug.Log("Test successful");
+                Stop();
+            }
             return;
         }
 
@@ -133,9 +146,9 @@ public class NameRepository
         {
             if (!ShouldAddName(message)) return;
 
-            activeChatters.Add(message.Sender);
-
-            var msg = $"{message.Sender} just entered the Shark Name Pool";
+            activeChattersWithColours.Add(message.Sender.Username, TwitchSharkName.GetColorFromHex(message.Sender.Color));
+            Debug.Log($"Current count: {activeChattersWithColours.Count}");
+            var msg = $"{message.Sender.Username} just entered the Shark Name Pool";
 
             if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
             {
@@ -150,19 +163,33 @@ public class NameRepository
 
     }
 
-    public string Next()
+    public class SharkChatter
     {
-        if (activeChatters.Count == 0)
+        public string Username { get; set; }
+        public Color Color { get; set; }
+    }
+    public SharkChatter Next()
+    {
+        if (activeChattersWithColours.Count == 0)
         {
-            return TwitchSharkName.ExtraSettingsAPI_GetInputValue(TwitchSharkName.SETTINGS_DEFAULT_SHARK_NAME);
+            return new SharkChatter
+            {
+                Username = TwitchSharkName.ExtraSettingsAPI_GetInputValue(TwitchSharkName.SETTINGS_DEFAULT_SHARK_NAME),
+                Color = TwitchSharkName.GetColorFromHex(TwitchSharkName.DEFAULT_COLOR)
+            };
         }
 
         var random = new System.Random();
-        var array = activeChatters.ToArray();
-        var result = array[random.Next(array.Length)];
-        Debug.Log($"Randomly chosen the name: {result}");
-        activeChatters.Remove(result);
-        return result;
+        var array = activeChattersWithColours.Keys.ToArray();
+        var username = array[random.Next(array.Length)];
+        var color = activeChattersWithColours[username];
+        Debug.Log($"Randomly chosen the name: {username}");
+        activeChattersWithColours.Remove(username);
+        return new SharkChatter
+        {
+            Username = username,
+            Color = color
+        };
     }
 
     private ControlCommand ProcessMessage(TwitchChatMessage message)
@@ -174,11 +201,24 @@ public class NameRepository
             Message = message.Message
         };
 
+        if (result.Type == CommandType.COMMAND && message.Message.Length == 1)
+        {
+            //If the message is just a single !, disregard it as a command
+            result.Type = CommandType.REGULAR;
+            return result;
+        }
+
         if (result.Type == CommandType.COMMAND)
         {
-            var delimPos = result.Message.IndexOf(" ");
-            result.Command = result.Message.Substring(1, delimPos).TrimEnd().ToLower();
-            result.Message = result.Message.Substring(delimPos).Trim();
+            result.Message = "";
+            result.Command = message.Message.Substring(1).TrimEnd().ToLower();
+
+            var delimPos = message.Message.IndexOf(" ");
+            if (delimPos >= 0)
+            {
+                result.Command = message.Message.Substring(1, delimPos).TrimEnd().ToLower();
+                result.Message = message.Message.Substring(delimPos).Trim();
+            }
         }
 
         return result;

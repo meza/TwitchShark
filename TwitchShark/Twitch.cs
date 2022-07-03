@@ -33,9 +33,14 @@ public class Twitch
         public string Hostmask { get; set; }
         public Dictionary<string, string> Tags { get; set; }
     }
+    public class TwitchUser
+    {
+        public string Username { get; set; }
+        public string Color { get; set; }
+    }
     public class TwitchChatMessage : EventArgs
     {
-        public string Sender { get; set; }
+        public TwitchUser Sender { get; set; }
         public string Message { get; set; }
         public string Channel { get; set; }
         public bool IsSub { get; set; }
@@ -68,10 +73,12 @@ public class Twitch
         var message = command.Message.ToLower();
         if (message == "login authentication failed" || message == "improperly formatted auth")
         {
+            Debug.Log("Login failed");
             OnConnection(this, new TwitchConnection
             {
                 Success = false
             });
+
             cts.Cancel();
         }
     }
@@ -80,7 +87,7 @@ public class Twitch
     {
         var msg = new TwitchChatMessage
         {
-            Sender = command.Tags["display-name"],
+            Sender = new TwitchUser { Username = command.Tags["display-name"], Color = command.Tags["color"] },
             IsMod = command.Tags["mod"] == "1" || command.Tags["badges"].Contains("broadcaster"),
             IsSub = command.Tags["subscriber"] == "1",
             Message = command.Message,
@@ -92,42 +99,65 @@ public class Twitch
 
     public async Task Start(CancellationTokenSource cts)
     {
-        Debug.Log($"Connecting to twitch {cts.ToString()}");
-        var tcpClient = new TcpClient();
-        await tcpClient.ConnectAsync(this.Ip, this.Port);
-
-        streamReader = new StreamReader(tcpClient.GetStream());
-        streamWriter = new StreamWriter(tcpClient.GetStream()) { NewLine = "\r\n", AutoFlush = true };
-
-        await streamWriter.WriteLineAsync($"PASS {this.Token}");
-        await streamWriter.WriteLineAsync($"NICK {this.Username}");
-
-        while (true)
+        using (cts)
         {
-            if (cts.IsCancellationRequested)
+            try
             {
-                Debug.Log($"Stopping Twitch Thread {cts.ToString()}");
-                break;
-            }
-            string line = await streamReader.ReadLineAsync();
-            var command = parser.Parse(line);
+                Debug.Log($"Connecting to twitch, thread: {cts.Token.GetHashCode()}");
+                var tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync(this.Ip, this.Port);
 
-            switch (command.Command)
+                streamReader = new StreamReader(tcpClient.GetStream());
+                streamWriter = new StreamWriter(tcpClient.GetStream()) { NewLine = "\r\n", AutoFlush = true };
+
+                await streamWriter.WriteLineAsync($"PASS {this.Token}");
+                await streamWriter.WriteLineAsync($"NICK {this.Username}");
+
+                while (true)
+                {
+                    cts.Token.ThrowIfCancellationRequested();
+                    string line = await streamReader.ReadLineAsync();
+                    cts.Token.ThrowIfCancellationRequested();
+                    if (line == null) continue;
+
+                    var command = parser.Parse(line);
+
+                    switch (command.Command)
+                    {
+                        case "PING":
+                            OnPing(command);
+                            break;
+                        case "001":
+                            OnConnectedMessage(command);
+                            break;
+                        case "NOTICE":
+                            OnNotice(command, cts);
+                            break;
+                        case "PRIVMSG":
+                            OnPRIVMessage(command);
+                            break;
+                        case "RECONECT":
+                            Debug.Log("Reconnect message received");
+                            break;
+                    }
+                }
+            }
+            catch (OperationCanceledException e)
             {
-                case "PING":
-                    OnPing(command);
-                    break;
-                case "001":
-                    OnConnectedMessage(command);
-                    break;
-                case "NOTICE":
-                    OnNotice(command, cts);
-                    break;
-                case "PRIVMSG":
-                    OnPRIVMessage(command);
-                    break;
-                case "RECONECT":
-                    break;
+                Debug.Log($"Twitch disconnect requested for thread: {e.CancellationToken.GetHashCode()}");
+            }
+            catch (IOException e)
+            {
+                Debug.Log($"Twitch had a hiccup, reconnecting... {e.Message}");
+                Start(cts);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+            finally
+            {
+                cts.Dispose();
             }
         }
 

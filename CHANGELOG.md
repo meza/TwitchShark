@@ -1,5 +1,25 @@
 # Twitch Shark Changelog
 
+# [1.6.0](https://github.com/meza/TwitchShark/compare/v1.5.1...v1.6.0) (2022-07-03)
+
+
+### Bug Fixes
+
+* fixed the client experience ([718fe06](https://github.com/meza/TwitchShark/commit/718fe06c903a1f21092a151c18d3d67e9061b77c))
+
+
+### Features
+
+* added a reconnect button to the settings page ([5c86987](https://github.com/meza/TwitchShark/commit/5c8698741f7116b024da2f2959aa5778e9b4a2e6))
+* added twitch color support ([6d710f5](https://github.com/meza/TwitchShark/commit/6d710f565f401c363bd0e84b36bd04273eac2842))
+
+## [1.5.1](https://github.com/meza/TwitchShark/compare/v1.5.0...v1.5.1) (2022-07-03)
+
+
+### Bug Fixes
+
+* fixed the multiplayer experience for the clients ([2ddae17](https://github.com/meza/TwitchShark/commit/2ddae17b44bebd884504f8fb3afcbf94b964bee8))
+
 # [1.5.0](https://github.com/meza/TwitchShark/compare/v1.4.0...v1.5.0) (2022-07-02)
 
 
