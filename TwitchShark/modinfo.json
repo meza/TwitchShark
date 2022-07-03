@@ -63,6 +63,11 @@
       "name": "twitchSharkBlacklistDatastore",
       "access": "both",
       "default": {}
+    },
+    {
+      "type": "button",
+      "name": "twitchSharkTestTwitch",
+      "text": "Test Connection"
     }
   ]
 }

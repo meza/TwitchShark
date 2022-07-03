@@ -11,22 +11,29 @@ public class NameRepository
     Twitch client;
     private string username;
     private HNotification connectionNotification;
-    private readonly CancellationTokenSource cts = new CancellationTokenSource();
+    private CancellationTokenSource cts;
     private readonly HashSet<string> activeChatters = new HashSet<string>();
     private HashSet<string> blacklist;
+    private bool isTest = false;
     public void Stop()
     {
-        cts.Cancel();
+        if (cts != null && !cts.IsCancellationRequested)
+        {
+            cts.Cancel();
+        }
     }
 
-    public async Task Start(String username, String token, String channel)
+    public async Task Start(String username, String token, String channel, bool isTest = false)
     {
+        this.isTest = isTest;
         blacklist = new HashSet<string>(TwitchSharkName.ExtraSettingsAPI_GetDataNames(TwitchSharkName.SETTINGS_BLACKLIST));
         this.username = username;
-        connectionNotification = TwitchSharkName.LoadingNotification("Connecting to Twitch");
+        var msg = isTest ? "Testing Twitch Connection" : "Connecting to Twitch";
+        connectionNotification = TwitchSharkName.LoadingNotification(msg);
         client = new Twitch(username, token);
         client.OnMessage += OnMessage;
         client.OnConnection += OnConnection;
+        cts = new CancellationTokenSource();
         client.Start(cts);
 
         await client.JoinChannel(channel);
@@ -57,6 +64,11 @@ public class NameRepository
         if (connection.Success == true)
         {
             TwitchSharkName.SuccessNotification("Connected to Twitch");
+            if (isTest)
+            {
+                Debug.Log("Test successful");
+                Stop();
+            }
             return;
         }
 

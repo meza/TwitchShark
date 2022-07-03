@@ -18,6 +18,7 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_SUB_ONLY = "twitchSubOnly";
     public readonly static string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
     public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
+    public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
@@ -27,7 +28,6 @@ public class TwitchSharkName : Mod
     public NameRepository names = new NameRepository();
     private Harmony harmonyInstance;
     private AssetBundle assets;
-    private bool initialised = false;
 
     public IEnumerator Start()
     {
@@ -44,10 +44,8 @@ public class TwitchSharkName : Mod
         Log("Twitch Shark mod loaded");
     }
 
-    private void Initialise()
+    private void Initialise(bool isTest = false)
     {
-        if (initialised) return;
-
         var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME);
         var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
         var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL);
@@ -59,8 +57,7 @@ public class TwitchSharkName : Mod
             return;
         }
 
-        names.Start(username, token, channel).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
-        initialised = true;
+        names.Start(username, token, channel, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
@@ -93,25 +90,32 @@ public class TwitchSharkName : Mod
     }
     public void OnModUnload()
     {
-        if (Raft_Network.IsHost)
-        {
-            names.Stop();
-        }
         harmonyInstance.UnpatchAll("hu.meza.TwitchShark");
         assets.Unload(true);
         Instance = null;
         Log("Twitch Shark Name mod unloaded");
-        initialised = false;
     }
 
     override public void WorldEvent_WorldLoaded()
     {
         inWorld = true;
+
+        if (Raft_Network.IsHost)
+        {
+            Initialise();
+        } else
+        {
+            SuccessNotification("You are joining a session with Twitch Shark enabled. You don't have to set anything up, just have fun!");
+        }
     }
 
     override public void WorldEvent_WorldUnloaded()
     {
         inWorld = false;
+        if (Raft_Network.IsHost)
+        {
+            names.Stop();
+        }
     }
 
     public static bool InWorld()
@@ -177,11 +181,6 @@ public class TwitchSharkName : Mod
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
-        Debug.Log($"Is Host? {Raft_Network.IsHost}");
-        if (Raft_Network.IsHost)
-        {
-            Initialise();
-        }
 
     }
 
@@ -191,23 +190,21 @@ public class TwitchSharkName : Mod
         {
             names.Stop();
         }
-        initialised = false;
     }
 
-    public void ExtraSettingsAPI_SettingsClose()
-    {
-        if (Raft_Network.IsHost)
-        {
-            Initialise();
-        }
-        initialised = false;
-    }
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
     public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
     public static void ExtraSettingsAPI_SetDataValues(string SettingName, Dictionary<string, string> values) { }
     public static string ExtraSettingsAPI_GetDataValue(string SettingName, string subname) => "";
     public static string[] ExtraSettingsAPI_GetDataNames(string SettingName) => new string[0];
+    public void ExtraSettingsAPI_ButtonPress(string name) // Occurs when a settings button is clicked. "name" is set the the button's name
+    {
+        if (name == SETTINGS_TEST_TWITCH_BUTTON)
+        {
+            Initialise(true);
+        }
+    }
     public static void OnAsyncMethodFailed(Task task)
     {
         Exception ex = task.Exception;
