@@ -2,5 +2,3 @@
 *.rmod
 obj
 bin
-AssetBundle/Library/ShaderCache/
-AssetBundle/Library/Artifacts/
