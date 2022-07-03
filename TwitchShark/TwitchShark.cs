@@ -21,6 +21,7 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
     public readonly static string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
     public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
+    public readonly static string SETTINGS_DEBUG = "twitchDebug";
     static bool ExtraSettingsAPI_Loaded = false;
     public readonly static string DEFAULT_COLOR = "#BB7C6A";
     public static int CHANNEL_ID = 588;

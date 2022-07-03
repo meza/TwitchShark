@@ -17,10 +17,20 @@ public class NameRepository
     private bool isTest = false;
     public void Stop()
     {
-        Debug.Log("Stop requested");
-        if (cts.Token.CanBeCanceled)
+        try
         {
-            cts.Cancel();
+            Debug.Log("Stop requested");
+            if (cts.Token.CanBeCanceled)
+            {
+                cts.Cancel();
+            }
+        }
+        catch (ObjectDisposedException e)
+        {
+            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            {
+                Debug.Log("Already cancelled, no need to recancel");
+            }
         }
     }
 

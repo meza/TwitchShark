@@ -66,6 +66,13 @@
       "default": true
     },
     {
+      "type": "checkbox",
+      "name": "twitchDebug",
+      "text": "Debug",
+      "access": "both",
+      "default": false
+    },
+    {
       "type": "data",
       "name": "twitchSharkBlacklistDatastore",
       "access": "both",
