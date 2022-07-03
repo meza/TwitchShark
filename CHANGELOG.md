@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.5.1](https://github.com/meza/TwitchShark/compare/v1.5.0...v1.5.1) (2022-07-03)
+
+
+### Bug Fixes
+
+* fixed the multiplayer experience for the clients ([2ddae17](https://github.com/meza/TwitchShark/commit/2ddae17b44bebd884504f8fb3afcbf94b964bee8))
+
 # [1.5.0](https://github.com/meza/TwitchShark/compare/v1.4.0...v1.5.0) (2022-07-02)
 
 
