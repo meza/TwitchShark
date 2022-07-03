@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class TwitchSharkName : Mod
 {
+    public static string version = "VERSION";
     public readonly static string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
     public readonly static string SETTINGS_USERNAME = "twitchUsername";
     public readonly static string SETTINGS_TOKEN = "twitchToken";
@@ -46,7 +47,7 @@ public class TwitchSharkName : Mod
         harmonyInstance.PatchAll();
 
 
-        Log("Twitch Shark mod loaded");
+        Log($"Twitch Shark mod {version} loaded");
     }
 
     private void Initialise(bool isTest = false)
@@ -57,9 +58,9 @@ public class TwitchSharkName : Mod
             return;
         }
 
-        var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME);
+        var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
         var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
-        var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL);
+        var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
 
         if (token == "" || username == "" || channel == "")
         {
