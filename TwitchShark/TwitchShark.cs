@@ -24,6 +24,7 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
     public readonly static string SETTINGS_TIMEOUT = "twitchSharkTimeout";
     public readonly static string SETTINGS_DEBUG = "twitchDebug";
+    public readonly static string SETTINGS_RESET = "twitchSharkResetEntries";
     static bool ExtraSettingsAPI_Loaded = false;
     public readonly static string DEFAULT_COLOR = "#BB7C6A";
     public static int CHANNEL_ID = 588;
@@ -140,6 +141,7 @@ public class TwitchSharkName : Mod
         {
             Debug.Log("World Unloaded");
             names.Stop();
+            names.Reset();
         }
     }
 
@@ -290,6 +292,12 @@ public class TwitchSharkName : Mod
             names.Stop();
             Initialise();
             return;
+        }
+
+        if (name == SETTINGS_RESET)
+        {
+            names.Reset();
+            SuccessNotification("Entries have been cleared.\nA new pool has been opened!");
         }
     }
     public static void OnAsyncMethodFailed(Task task)

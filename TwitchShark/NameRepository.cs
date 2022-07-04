@@ -50,6 +50,11 @@ public class NameRepository
         await client.JoinChannel(channel);
     }
 
+    public void Reset()
+    {
+        activeChattersWithColours.Clear();
+    }
+
     public static Dictionary<string, NameEntry> GetAllEntries()
     {
         return activeChattersWithColours;

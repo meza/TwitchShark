@@ -93,18 +93,51 @@
     },
     {
       "type": "text",
+      "name": "twitchSharkMoreInfoLater",
+      "text": "There are more controls here once you are in a game",
+      "access": "mainmenu"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkEmpty0",
+      "text": "",
+      "access": "world"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkReconnectInfo0",
+      "text": "---------- Session Settings ----------",
+      "access": "world"
+    },
+    {
+      "type": "button",
+      "name": "twitchSharkResetEntries",
+      "text": "Clear The Entries",
+      "access": "world"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkEmpty2",
+      "text": "",
+      "access": "world"
+    },
+    {
+      "type": "text",
       "name": "twitchSharkReconnectInfo1",
-      "text": "You only need to reconnect if something goes horribly wrong."
+      "text": "You only need to reconnect if something goes horribly wrong.",
+      "access": "world"
     },
     {
       "type": "text",
       "name": "twitchSharkReconnectInfo2",
-      "text": "You do not have to reconnect if you change the general settings"
+      "text": "You do not have to reconnect if you change the general settings",
+      "access": "world"
     },
     {
       "type": "button",
       "name": "twitchSharkReconnect",
-      "text": "Reconnect"
+      "text": "Emergency Reconnect",
+      "access": "world"
     }
   ]
 }
