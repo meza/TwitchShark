@@ -56,6 +56,10 @@ public class Twitch
 
     private async void OnPing(TwitchCommand command)
     {
+        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+        {
+            Debug.Log("Sending PONG");
+        }
         await streamWriter.WriteLineAsync($"PONG {command.Message}");
     }
 
