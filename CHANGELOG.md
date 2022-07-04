@@ -1,5 +1,19 @@
 # Twitch Shark Changelog
 
+# [1.7.0](https://github.com/meza/TwitchShark/compare/v1.6.2...v1.7.0) (2022-07-04)
+
+
+### Bug Fixes
+
+* clarified the purpose of the reconnect button ([d5fe00c](https://github.com/meza/TwitchShark/commit/d5fe00ce1eeb94150b046ff1e2e365ee207ec7ab))
+* removed some log spam ([fb96434](https://github.com/meza/TwitchShark/commit/fb96434a120580831f18930b036a65992be09adb))
+
+
+### Features
+
+* added a Clear Entries button to the settings ([ddd77ee](https://github.com/meza/TwitchShark/commit/ddd77ee0400d8c9479ead9e7c909b2a05503ac8d))
+* added the ability to set a timeout for entries ([932b40d](https://github.com/meza/TwitchShark/commit/932b40dbf1e5c65772b061c1c80dacc1a22b5e84))
+
 ## [1.6.2](https://github.com/meza/TwitchShark/compare/v1.6.1...v1.6.2) (2022-07-03)
 
 
