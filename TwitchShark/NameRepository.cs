@@ -157,7 +157,6 @@ public class NameRepository
             if (!ShouldAddName(message)) return;
 
             activeChattersWithColours.Add(message.Sender.Username, TwitchSharkName.GetColorFromHex(message.Sender.Color));
-            Debug.Log($"Current count: {activeChattersWithColours.Count}");
             var msg = $"{message.Sender.Username} just entered the Shark Name Pool";
 
             if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
