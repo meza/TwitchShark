@@ -22,7 +22,9 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
     public readonly static string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
     public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
+    public readonly static string SETTINGS_TIMEOUT = "twitchSharkTimeout";
     public readonly static string SETTINGS_DEBUG = "twitchDebug";
+    public readonly static string SETTINGS_RESET = "twitchSharkResetEntries";
     static bool ExtraSettingsAPI_Loaded = false;
     public readonly static string DEFAULT_COLOR = "#BB7C6A";
     public static int CHANNEL_ID = 588;
@@ -34,6 +36,9 @@ public class TwitchSharkName : Mod
     public NameRepository names = new NameRepository();
     private Harmony harmonyInstance;
     private AssetBundle assets;
+    private string previousUsername = "";
+    private string previousToken = "";
+    private string previousChannelName = "";
 
     public IEnumerator Start()
     {
@@ -58,18 +63,18 @@ public class TwitchSharkName : Mod
             return;
         }
 
-        var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
-        var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
-        var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
+        previousUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
+        previousToken = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        previousChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
 
-        if (token == "" || username == "" || channel == "")
+        if (previousToken == "" || previousUsername == "" || previousChannelName == "")
         {
             Debug.Log("Missing Twitch Details. Please go to Settings");
             FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, "Missing Twitch Details. Please go to Settings", 10, HNotify.ErrorSprite);
             return;
         }
 
-        names.Start(username, token, channel, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
+        names.Start(previousUsername, previousToken, previousChannelName, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
@@ -93,13 +98,13 @@ public class TwitchSharkName : Mod
             }
             else
             {
-                var user = names.Next();
-                text.text = user.Username;
+                var entry = names.Next();
+                text.text = entry.Name;
                 text.color = GetColorFromHex(DEFAULT_COLOR);
 
                 if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_USE_COLORS))
                 {
-                    text.color = user.Color;
+                    text.color = entry.Color;
                 }
             }
             Debug.Log($"Adding the name: {text.text} to the shark");
@@ -136,6 +141,7 @@ public class TwitchSharkName : Mod
         {
             Debug.Log("World Unloaded");
             names.Stop();
+            names.Reset();
         }
     }
 
@@ -174,6 +180,16 @@ public class TwitchSharkName : Mod
                     }
                 }
             }
+        }
+    }
+
+    [ConsoleCommand(name: "getnameentries", docs: "lists the entries for the shark name pool [debug/emergency use only]")]
+    public static void ListEnteredNames()
+    {
+        var entries = NameRepository.GetAllEntries();
+        foreach(var entry in entries)
+        {
+            Debug.Log($"{entry.Value.Name} entered at {entry.Value.EnteredOn.ToString()}");
         }
     }
 
@@ -218,6 +234,33 @@ public class TwitchSharkName : Mod
 
     }
 
+    public void ExtraSettingsAPI_SettingsOpen() // Occurs when user opens the settings menu
+    {
+
+    }
+
+    public void ExtraSettingsAPI_SettingsClose() // Occurs when user closes the settings menu
+    {
+        var newUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
+        var newToken = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        var newChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
+
+        if ((newUsername != previousUsername) || (newToken != previousToken) || (newChannelName != previousChannelName))
+        {
+            if (inWorld && Raft_Network.IsHost)
+            {
+                if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_DEBUG))
+                {
+                    Debug.Log("Twitch settings have changed, reconnecting");
+                }
+                names.Stop();
+                Initialise();
+            }
+        }
+
+    }
+    public static int ExtraSettingsAPI_GetComboboxSelectedIndex(string SettingName) => -1;
+    public static string ExtraSettingsAPI_GetComboboxSelectedItem(string SettingName) => "";
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
     public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
@@ -249,6 +292,12 @@ public class TwitchSharkName : Mod
             names.Stop();
             Initialise();
             return;
+        }
+
+        if (name == SETTINGS_RESET)
+        {
+            names.Reset();
+            SuccessNotification("Entries have been cleared.\nA new pool has been opened!");
         }
     }
     public static void OnAsyncMethodFailed(Task task)
