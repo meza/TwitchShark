@@ -66,6 +66,14 @@
       "default": true
     },
     {
+      "type": "combobox",
+      "name": "twitchSharkTimeout",
+      "text": "Entries time out after",
+      "access": "both",
+      "default": "never",
+      "values": [ "never", "5 minutes", "10 minutes", "15 minutes", "30 minutes", "1 hour", "2 hours", "4 hours" ]
+    },
+    {
       "type": "checkbox",
       "name": "twitchDebug",
       "text": "Debug",
@@ -84,9 +92,52 @@
       "text": "Test Connection"
     },
     {
+      "type": "text",
+      "name": "twitchSharkMoreInfoLater",
+      "text": "There are more controls here once you are in a game",
+      "access": "mainmenu"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkEmpty0",
+      "text": "",
+      "access": "world"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkReconnectInfo0",
+      "text": "---------- Session Settings ----------",
+      "access": "world"
+    },
+    {
+      "type": "button",
+      "name": "twitchSharkResetEntries",
+      "text": "Clear The Entries",
+      "access": "world"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkEmpty2",
+      "text": "",
+      "access": "world"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkReconnectInfo1",
+      "text": "You only need to reconnect if something goes horribly wrong.",
+      "access": "world"
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkReconnectInfo2",
+      "text": "You do not have to reconnect if you change the general settings",
+      "access": "world"
+    },
+    {
       "type": "button",
       "name": "twitchSharkReconnect",
-      "text": "Reconnect"
+      "text": "Emergency Reconnect",
+      "access": "world"
     }
   ]
 }
