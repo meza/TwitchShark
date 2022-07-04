@@ -66,6 +66,14 @@
       "default": true
     },
     {
+      "type": "combobox",
+      "name": "twitchSharkTimeout",
+      "text": "Entries time out after",
+      "access": "both",
+      "default": "never",
+      "values": [ "never", "5 minutes", "10 minutes", "15 minutes", "30 minutes", "1 hour", "2 hours", "4 hours" ]
+    },
+    {
       "type": "checkbox",
       "name": "twitchDebug",
       "text": "Debug",

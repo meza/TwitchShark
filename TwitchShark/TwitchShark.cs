@@ -22,6 +22,7 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
     public readonly static string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
     public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
+    public readonly static string SETTINGS_TIMEOUT = "twitchSharkTimeout";
     public readonly static string SETTINGS_DEBUG = "twitchDebug";
     static bool ExtraSettingsAPI_Loaded = false;
     public readonly static string DEFAULT_COLOR = "#BB7C6A";
@@ -96,13 +97,13 @@ public class TwitchSharkName : Mod
             }
             else
             {
-                var user = names.Next();
-                text.text = user.Username;
+                var entry = names.Next();
+                text.text = entry.Name;
                 text.color = GetColorFromHex(DEFAULT_COLOR);
 
                 if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_USE_COLORS))
                 {
-                    text.color = user.Color;
+                    text.color = entry.Color;
                 }
             }
             Debug.Log($"Adding the name: {text.text} to the shark");
@@ -180,6 +181,16 @@ public class TwitchSharkName : Mod
         }
     }
 
+    [ConsoleCommand(name: "getnameentries", docs: "lists the entries for the shark name pool [debug/emergency use only]")]
+    public static void ListEnteredNames()
+    {
+        var entries = NameRepository.GetAllEntries();
+        foreach(var entry in entries)
+        {
+            Debug.Log($"{entry.Value.Name} entered at {entry.Value.EnteredOn.ToString()}");
+        }
+    }
+
     [ConsoleCommand(name: "respawnshark", docs: "respawns the shark with a new name [debug/emergency use only]")]
     public static void RespawnCommand(string[] args)
     {
@@ -246,7 +257,8 @@ public class TwitchSharkName : Mod
         }
 
     }
-
+    public static int ExtraSettingsAPI_GetComboboxSelectedIndex(string SettingName) => -1;
+    public static string ExtraSettingsAPI_GetComboboxSelectedItem(string SettingName) => "";
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
     public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }

@@ -40,6 +40,7 @@ public class Twitch
     }
     public class TwitchChatMessage : EventArgs
     {
+        public DateTime DateTime { get; set; }
         public TwitchUser Sender { get; set; }
         public string Message { get; set; }
         public string Channel { get; set; }
@@ -91,7 +92,8 @@ public class Twitch
             IsMod = command.Tags["mod"] == "1" || command.Tags["badges"].Contains("broadcaster"),
             IsSub = command.Tags["subscriber"] == "1",
             Message = command.Message,
-            Channel = command.Parameters.TrimStart('#')
+            Channel = command.Parameters.TrimStart('#'),
+            DateTime = DateTime.Now
         };
 
         OnMessage(this, msg);

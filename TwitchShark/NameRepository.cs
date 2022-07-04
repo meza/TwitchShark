@@ -12,7 +12,7 @@ public class NameRepository
     private string username;
     private HNotification connectionNotification;
     private CancellationTokenSource cts;
-    private readonly Dictionary<string, Color> activeChattersWithColours = new Dictionary<string, Color>();
+    private readonly static Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry >();
     private HashSet<string> blacklist;
     private bool isTest = false;
     public void Stop()
@@ -48,6 +48,11 @@ public class NameRepository
         client.Start(cts);
 
         await client.JoinChannel(channel);
+    }
+
+    public static Dictionary<string, NameEntry> GetAllEntries()
+    {
+        return activeChattersWithColours;
     }
 
     private bool ShouldAddName(TwitchChatMessage message)
@@ -156,7 +161,11 @@ public class NameRepository
         {
             if (!ShouldAddName(message)) return;
 
-            activeChattersWithColours.Add(message.Sender.Username, TwitchSharkName.GetColorFromHex(message.Sender.Color));
+            activeChattersWithColours.Add(message.Sender.Username, new NameEntry {
+                Color = TwitchSharkName.GetColorFromHex(message.Sender.Color),
+                Name = message.Sender.Username,
+                EnteredOn = message.DateTime
+            });
             var msg = $"{message.Sender.Username} just entered the Shark Name Pool";
 
             if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
@@ -177,28 +186,62 @@ public class NameRepository
         public string Username { get; set; }
         public Color Color { get; set; }
     }
-    public SharkChatter Next()
+    public NameEntry Next()
     {
         if (activeChattersWithColours.Count == 0)
         {
-            return new SharkChatter
+            return new NameEntry
             {
-                Username = TwitchSharkName.ExtraSettingsAPI_GetInputValue(TwitchSharkName.SETTINGS_DEFAULT_SHARK_NAME),
-                Color = TwitchSharkName.GetColorFromHex(TwitchSharkName.DEFAULT_COLOR)
+                Name = TwitchSharkName.ExtraSettingsAPI_GetInputValue(TwitchSharkName.SETTINGS_DEFAULT_SHARK_NAME),
+                Color = TwitchSharkName.GetColorFromHex(TwitchSharkName.DEFAULT_COLOR),
+                EnteredOn = DateTime.Now
             };
         }
 
         var random = new System.Random();
         var array = activeChattersWithColours.Keys.ToArray();
         var username = array[random.Next(array.Length)];
-        var color = activeChattersWithColours[username];
+        var entry = activeChattersWithColours[username];
+
+        if(HasEntryTimedOut(entry))
+        {
+            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            {
+                Debug.Log($"{username}'s entry has timed out. Removing them from the list");
+            }
+            activeChattersWithColours.Remove(username);
+            return Next();
+        }
+        
         Debug.Log($"Randomly chosen the name: {username}");
         activeChattersWithColours.Remove(username);
-        return new SharkChatter
+        return entry;
+    }
+
+    private bool HasEntryTimedOut(NameEntry entry)
+    {
+        var timeout = TwitchSharkName.ExtraSettingsAPI_GetComboboxSelectedItem(TwitchSharkName.SETTINGS_TIMEOUT).ToLower();
+        if (timeout == "never") return false;
+        switch (timeout)
         {
-            Username = username,
-            Color = color
-        };
+            case "5 minutes":
+                return entry.EnteredOn.AddMinutes(5) < DateTime.Now;
+            case "10 minutes":
+                return entry.EnteredOn.AddMinutes(10) < DateTime.Now;
+            case "15 minutes":
+                return entry.EnteredOn.AddMinutes(15) < DateTime.Now;
+            case "30 minutes":
+                return entry.EnteredOn.AddMinutes(30) < DateTime.Now;
+            case "1 hour":
+                return entry.EnteredOn.AddHours(1) < DateTime.Now;
+            case "2 hours":
+                return entry.EnteredOn.AddHours(2) < DateTime.Now;
+            case "4 hours":
+                return entry.EnteredOn.AddHours(4) < DateTime.Now;
+            default:
+                return false;
+        }
+
     }
 
     private ControlCommand ProcessMessage(TwitchChatMessage message)
@@ -258,5 +301,12 @@ public class NameRepository
         {
             RAPI.BroadcastChatMessage(msg);
         }
+    }
+
+    public class NameEntry
+    {
+        public string Name { get; set; }
+        public DateTime EnteredOn { get; set; }
+        public Color Color { get; set; }
     }
 }
