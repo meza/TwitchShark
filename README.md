@@ -4,7 +4,7 @@ Once the name has been chosen for the shark, the person has to say something in 
 
 I recommend setting up a channel point redemption to get chat to make you kill the shark for added engagement.
 
-If you experience any issues that you can't resolve by restarting the game, please ping Meza#0001 on the [Raft Modding Discord](https://www.raftmodding.com/discord)
+If you experience any issues that you can't resolve by restarting the game, please ping `Meza#0001` on the [Raft Modding Discord](https://www.raftmodding.com/discord)
 
 Twitch Shark is fully compatible with the [Crowd Control mod](https://www.raftmodding.com/mods/crowd-control-support). Sharks spawned via Crowd Control will take on the names that come from Crowd Control.
 
