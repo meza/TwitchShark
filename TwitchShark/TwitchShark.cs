@@ -34,6 +34,9 @@ public class TwitchSharkName : Mod
     public NameRepository names = new NameRepository();
     private Harmony harmonyInstance;
     private AssetBundle assets;
+    private string previousUsername = "";
+    private string previousToken = "";
+    private string previousChannelName = "";
 
     public IEnumerator Start()
     {
@@ -58,18 +61,18 @@ public class TwitchSharkName : Mod
             return;
         }
 
-        var username = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
-        var token = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
-        var channel = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
+        previousUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
+        previousToken = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        previousChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
 
-        if (token == "" || username == "" || channel == "")
+        if (previousToken == "" || previousUsername == "" || previousChannelName == "")
         {
             Debug.Log("Missing Twitch Details. Please go to Settings");
             FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, "Missing Twitch Details. Please go to Settings", 10, HNotify.ErrorSprite);
             return;
         }
 
-        names.Start(username, token, channel, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
+        names.Start(previousUsername, previousToken, previousChannelName, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
     }
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
@@ -215,6 +218,32 @@ public class TwitchSharkName : Mod
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
+
+    }
+
+    public void ExtraSettingsAPI_SettingsOpen() // Occurs when user opens the settings menu
+    {
+
+    }
+
+    public void ExtraSettingsAPI_SettingsClose() // Occurs when user closes the settings menu
+    {
+        var newUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
+        var newToken = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        var newChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
+
+        if ((newUsername != previousUsername) || (newToken != previousToken) || (newChannelName != previousChannelName))
+        {
+            if (inWorld && Raft_Network.IsHost)
+            {
+                if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_DEBUG))
+                {
+                    Debug.Log("Twitch settings have changed, reconnecting");
+                }
+                names.Stop();
+                Initialise();
+            }
+        }
 
     }
 

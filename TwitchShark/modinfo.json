@@ -84,6 +84,16 @@
       "text": "Test Connection"
     },
     {
+      "type": "text",
+      "name": "twitchSharkReconnectInfo1",
+      "text": "You only need to reconnect if something goes horribly wrong."
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkReconnectInfo2",
+      "text": "You do not have to reconnect if you change the general settings"
+    },
+    {
       "type": "button",
       "name": "twitchSharkReconnect",
       "text": "Reconnect"
