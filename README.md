@@ -36,9 +36,9 @@ Use that in the settings.
 
 Your moderators are allowed to use the following commands **in the twitch chat**
 
-`**!noshark** username` - blacklists a given username
+`!noshark username` - blacklists a given username
 
-`**!allowshark** username` - removes a given username from the blacklist
+`!allowshark username` - removes a given username from the blacklist
 
 ## MULTIPLAYER
 
