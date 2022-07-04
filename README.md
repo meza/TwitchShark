@@ -1,8 +1,10 @@
 ﻿# Twitch Shark
-
-> WARNING: the mod hasn't been tested for Multiplayer yet. It _should_ work but if anything comes up, please open an issue on [github](https://github.com/meza/TwitchShark/issues).
-
 Name the shark after your active Twitch chat.
+Once the name has been chosen for the shark, the person has to say something in chat again to get back in the pool. This rewards activity in your chat.
+
+I recommend setting up a channel point redemption to get chat to make you kill the shark for added engagement.
+
+If you experience any issues that you can't resolve by restarting the game, please ping Meza#0001 on the [Raft Modding Discord](https://www.raftmodding.com/discord)
 
 Twitch Shark is fully compatible with the [Crowd Control mod](https://www.raftmodding.com/mods/crowd-control-support). Sharks spawned via Crowd Control will take on the names that come from Crowd Control.
 
@@ -15,8 +17,8 @@ Also **BIG SHOUTOUT** to [FranzFischer78](https://www.raftmodding.com/user/Franz
 ## Installing
 
 - Install the [Raft Mod Loader](https://www.raftmodding.com/download)
-- Install the mod from [The Raft Mod Website](https://www.raftmodding.com/mods)
-- Install the [Settings Api Mod](https://www.raftmodding.com/mods/extra-settings-api)
+- Install this mod from [The Raft Mod Website](https://www.raftmodding.com/mods)
+- Install the [Settings Api Mod](https://www.raftmodding.com/mods/extra-settings-api) (only needed for the host)
 
 > Optionally you can install the [Mod Updater](https://www.raftmodding.com/mods/modupdater) to make sure you always have the latest versions
 
@@ -38,6 +40,16 @@ Your moderators are allowed to use the following commands **in the twitch chat**
 
 `**!allowshark** username` - removes a given username from the blacklist
 
+## MULTIPLAYER
+
+The mod WORKS in multiplayer however the experience isn't fully optimised yet.
+
+- Every person in the session needs to have this mod
+- Only the HOST needs to configure their twitch
+- All the other players can ignore the warnings the mod shows in the main menu
+
+I will be adding a proper client experience soon.
+
 ## Troubleshooting
 
 If something doesn't work, make sure to pay attention to the bottom right hand corner of the screen. An error message might pop up.
@@ -46,4 +58,4 @@ The main reasons the mod could fail is due to misconfiguration. Make sure to dou
 
 If that fails, try restarting the game.
 
-If that fails too, please let me know on [github](https://github.com/meza/TwitchShark/issues).
+If that fails too, press F10 to see the console and please get in touch on [github](https://github.com/meza/TwitchShark/issues).
