@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using TMPro;
+using UnityEngine;
 
 [HarmonyPatch(typeof(AI_NetworkBehavior_Shark), "Serialize_Update_Animal")]
 public static class AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch
@@ -15,7 +16,8 @@ public static class AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch
             }
 
             var name = nametag.text;
-            RAPI.SendNetworkMessage(new UpdateSharkNameMessage(TwitchSharkName.MESSAGE_TYPE_SET_NAME, __instance.ObjectIndex, name), channel: TwitchSharkName.CHANNEL_ID);
+            var color = ColorUtility.ToHtmlStringRGBA(nametag.color); ;
+            RAPI.SendNetworkMessage(new UpdateSharkNameMessage(TwitchSharkName.MESSAGE_TYPE_SET_NAME, __instance.ObjectIndex, name, color), channel: TwitchSharkName.CHANNEL_ID);
         }
     }
 }
