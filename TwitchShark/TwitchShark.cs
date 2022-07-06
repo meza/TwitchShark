@@ -90,7 +90,8 @@ public class TwitchSharkName : Mod
         nameTag.transform.localRotation = Quaternion.identity;
 
         var text = nameTag.GetComponentInChildren<TextMeshPro>();
-        
+
+
         if (Raft_Network.IsHost)
         {
             text.outlineWidth = 0.1f;
@@ -105,7 +106,7 @@ public class TwitchSharkName : Mod
                 var entry = names.Next();
                 text.text = entry.Name;
                 text.color = GetColorFromHex(DEFAULT_COLOR);
-              
+
 
                 if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_USE_COLORS))
                 {
@@ -192,7 +193,7 @@ public class TwitchSharkName : Mod
     public static void ListEnteredNames()
     {
         var entries = NameRepository.GetAllEntries();
-        foreach(var entry in entries)
+        foreach (var entry in entries)
         {
             Debug.Log($"{entry.Value.Name} entered at {entry.Value.EnteredOn.ToString()}");
         }
