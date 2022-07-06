@@ -12,7 +12,7 @@ public class NameRepository
     private string username;
     private HNotification connectionNotification;
     private CancellationTokenSource cts;
-    private readonly static Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry >();
+    private readonly static Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry>();
     private HashSet<string> blacklist;
     private bool isTest = false;
     public void Stop()
@@ -166,7 +166,8 @@ public class NameRepository
         {
             if (!ShouldAddName(message)) return;
 
-            activeChattersWithColours.Add(message.Sender.Username, new NameEntry {
+            activeChattersWithColours.Add(message.Sender.Username, new NameEntry
+            {
                 Color = TwitchSharkName.GetColorFromHex(message.Sender.Color),
                 Name = message.Sender.Username,
                 EnteredOn = message.DateTime
@@ -208,7 +209,7 @@ public class NameRepository
         var username = array[random.Next(array.Length)];
         var entry = activeChattersWithColours[username];
 
-        if(HasEntryTimedOut(entry))
+        if (HasEntryTimedOut(entry))
         {
             if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
             {
@@ -217,7 +218,7 @@ public class NameRepository
             activeChattersWithColours.Remove(username);
             return Next();
         }
-        
+
         Debug.Log($"Randomly chosen the name: {username}");
         activeChattersWithColours.Remove(username);
         return entry;

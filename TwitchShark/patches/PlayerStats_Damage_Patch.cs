@@ -6,7 +6,7 @@ public static class PlayerStats_Damage_Patch
 {
     static void Postfix(Network_Player ___playerNetwork, PlayerStats __instance)
     {
-        if (Raft_Network.IsHost && __instance.IsDead)
+        if (Raft_Network.IsHost)
         {
             if (TwitchSharkName.Instance.sharkCurrentlyAttacking != null)
             {
