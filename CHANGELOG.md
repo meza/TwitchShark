@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.7.1](https://github.com/meza/TwitchShark/compare/v1.7.0...v1.7.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* fixed the multiplayer chat spam on shark attacks. No death message for now ([96edb3a](https://github.com/meza/TwitchShark/commit/96edb3a1900ec9243fa5a94205e676ab2fc63353))
+
 # [1.7.0](https://github.com/meza/TwitchShark/compare/v1.6.2...v1.7.0) (2022-07-04)
 
 
