@@ -26,7 +26,8 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_DEBUG = "twitchDebug";
     public readonly static string SETTINGS_RESET = "twitchSharkResetEntries";
     static bool ExtraSettingsAPI_Loaded = false;
-    public readonly static string DEFAULT_COLOR = "#BB7C6A";
+    //public readonly static string DEFAULT_COLOR = "#BBA16A";
+    public readonly static string DEFAULT_COLOR = "#FFFFFF";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
@@ -89,8 +90,12 @@ public class TwitchSharkName : Mod
         nameTag.transform.localRotation = Quaternion.identity;
 
         var text = nameTag.GetComponentInChildren<TextMeshPro>();
+
+
         if (Raft_Network.IsHost)
         {
+            text.outlineWidth = 0.1f;
+
             if (isCrowdControlShark)
             {
                 text.text = potentialTextComponent.text;
@@ -101,6 +106,7 @@ public class TwitchSharkName : Mod
                 var entry = names.Next();
                 text.text = entry.Name;
                 text.color = GetColorFromHex(DEFAULT_COLOR);
+
 
                 if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_USE_COLORS))
                 {
@@ -187,7 +193,7 @@ public class TwitchSharkName : Mod
     public static void ListEnteredNames()
     {
         var entries = NameRepository.GetAllEntries();
-        foreach(var entry in entries)
+        foreach (var entry in entries)
         {
             Debug.Log($"{entry.Value.Name} entered at {entry.Value.EnteredOn.ToString()}");
         }

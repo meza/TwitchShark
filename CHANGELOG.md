@@ -1,5 +1,13 @@
 # Twitch Shark Changelog
 
+## [1.7.2](https://github.com/meza/TwitchShark/compare/v1.7.1...v1.7.2) (2022-07-06)
+
+
+### Bug Fixes
+
+* fixing the name rendering slightly. still not good ([6f85476](https://github.com/meza/TwitchShark/commit/6f8547600d3b5e9a0aa5c084e3f520d160cb5329))
+* updated the default shark name to be a bit more explicit ([7133468](https://github.com/meza/TwitchShark/commit/7133468acefa7be55d24d0af9c98a355e900446a))
+
 ## [1.7.1](https://github.com/meza/TwitchShark/compare/v1.7.0...v1.7.1) (2022-07-05)
 
 
