@@ -10,6 +10,7 @@ public static class AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch
         if (Raft_Network.IsHost)
         {
             var nametag = __instance.stateMachineShark.GetComponentInChildren<TextMeshPro>();
+
             if (nametag == null)
             {
                 nametag = TwitchSharkName.Instance.AddNametag(__instance.stateMachineShark);

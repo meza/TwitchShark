@@ -25,6 +25,7 @@ public class Twitch
     {
         public bool Success { get; set; }
     }
+
     public class TwitchCommand
     {
         public string Command { get; set; }
@@ -33,11 +34,13 @@ public class Twitch
         public string Hostmask { get; set; }
         public Dictionary<string, string> Tags { get; set; }
     }
+
     public class TwitchUser
     {
         public string Username { get; set; }
         public string Color { get; set; }
     }
+
     public class TwitchChatMessage : EventArgs
     {
         public DateTime DateTime { get; set; }
@@ -60,6 +63,7 @@ public class Twitch
         {
             Debug.Log("Sending PONG");
         }
+
         await streamWriter.WriteLineAsync($"PONG {command.Message}");
     }
 
@@ -76,6 +80,7 @@ public class Twitch
     private async void OnNotice(TwitchCommand command, CancellationTokenSource cts)
     {
         var message = command.Message.ToLower();
+
         if (message == "login authentication failed" || message == "improperly formatted auth")
         {
             Debug.Log("Login failed");
@@ -121,11 +126,14 @@ public class Twitch
             {
                 cts.Token.ThrowIfCancellationRequested();
                 string line = await streamReader.ReadLineAsync();
+
                 if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
                 {
                     Debug.Log($"Received message: {line}");
                 }
+
                 cts.Token.ThrowIfCancellationRequested();
+
                 if (line == null) continue;
 
                 var command = parser.Parse(line);
@@ -150,6 +158,7 @@ public class Twitch
                 }
             }
         }
+
         catch (OperationCanceledException e)
         {
             Debug.Log($"Twitch disconnect requested for thread: {e.CancellationToken.GetHashCode()}");
@@ -174,8 +183,8 @@ public class Twitch
         {
             cts.Dispose();
         }
-
     }
+
     public async Task SendMessage(string channel, string message)
     {
         await connected.Task;
@@ -188,6 +197,5 @@ public class Twitch
         await streamWriter.WriteLineAsync("CAP REQ :twitch.tv/commands twitch.tv/tags");
         await streamWriter.WriteLineAsync($"JOIN #{channel}");
         Debug.Log($"Joined #{channel}");
-
     }
 }

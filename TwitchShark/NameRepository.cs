@@ -15,11 +15,13 @@ public class NameRepository
     private readonly static Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry>();
     private HashSet<string> blacklist;
     private bool isTest = false;
+
     public void Stop()
     {
         try
         {
             Debug.Log("Stop requested");
+
             if (cts.Token.CanBeCanceled)
             {
                 cts.Cancel();
@@ -63,9 +65,11 @@ public class NameRepository
     private bool ShouldAddName(TwitchChatMessage message)
     {
         if (message.Sender.Username.ToLower() == username.ToLower()) return false;
+
         if (blacklist.Contains(message.Sender.Username.ToLower())) return false;
 
         var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_SUB_ONLY);
+
         if (activeChattersWithColours.Keys.Contains(message.Sender.Username)) return false;
 
         if (subOnly)
@@ -82,14 +86,17 @@ public class NameRepository
     private async void OnConnection(object sender, TwitchConnection connection)
     {
         connectionNotification.Close();
+
         if (connection.Success == true)
         {
             TwitchSharkName.SuccessNotification("Connected to Twitch");
+
             if (isTest)
             {
                 Debug.Log("Test successful");
                 Stop();
             }
+
             return;
         }
 
@@ -107,10 +114,12 @@ public class NameRepository
             if (processedMessage.Command == "noshark")
             {
                 var firstArgument = processedMessage.Message.Split(' ')[0].ToLower();
+
                 if (firstArgument.StartsWith("@"))
                 {
                     firstArgument = firstArgument.Substring(1);
                 }
+
                 if (!blacklist.Contains(firstArgument))
                 {
                     blacklist.Add(firstArgument);
@@ -132,6 +141,7 @@ public class NameRepository
             if (processedMessage.Command == "allowshark")
             {
                 var firstArgument = processedMessage.Message.Split(' ')[0].ToLower();
+
                 if (firstArgument.StartsWith("@"))
                 {
                     firstArgument = firstArgument.Substring(1);
@@ -142,6 +152,7 @@ public class NameRepository
                     blacklist.Remove(firstArgument);
 
                     Dictionary<string, string> persistedBlacklist = new Dictionary<string, string>();
+
                     foreach (var name in blacklist)
                     {
                         persistedBlacklist.Add(name, "");
@@ -151,7 +162,6 @@ public class NameRepository
                     var msg = $"{firstArgument} is now allowed to be a shark";
                     Debug.Log(msg);
                     Notify(message.Channel, msg);
-
                 }
                 else
                 {
@@ -172,6 +182,7 @@ public class NameRepository
                 Name = message.Sender.Username,
                 EnteredOn = message.DateTime
             });
+
             var msg = $"{message.Sender.Username} just entered the Shark Name Pool";
 
             if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
@@ -184,7 +195,6 @@ public class NameRepository
                 RAPI.BroadcastChatMessage(msg);
             }
         }
-
     }
 
     public class SharkChatter
@@ -192,6 +202,7 @@ public class NameRepository
         public string Username { get; set; }
         public Color Color { get; set; }
     }
+
     public NameEntry Next()
     {
         if (activeChattersWithColours.Count == 0)
@@ -215,6 +226,7 @@ public class NameRepository
             {
                 Debug.Log($"{username}'s entry has timed out. Removing them from the list");
             }
+
             activeChattersWithColours.Remove(username);
             return Next();
         }
@@ -227,7 +239,9 @@ public class NameRepository
     private bool HasEntryTimedOut(NameEntry entry)
     {
         var timeout = TwitchSharkName.ExtraSettingsAPI_GetComboboxSelectedItem(TwitchSharkName.SETTINGS_TIMEOUT).ToLower();
+
         if (timeout == "never") return false;
+
         switch (timeout)
         {
             case "5 minutes":
@@ -247,7 +261,6 @@ public class NameRepository
             default:
                 return false;
         }
-
     }
 
     private ControlCommand ProcessMessage(TwitchChatMessage message)
@@ -272,6 +285,7 @@ public class NameRepository
             result.Command = message.Message.Substring(1).TrimEnd().ToLower();
 
             var delimPos = message.Message.IndexOf(" ");
+
             if (delimPos >= 0)
             {
                 result.Command = message.Message.Substring(1, delimPos).TrimEnd().ToLower();
@@ -280,7 +294,6 @@ public class NameRepository
         }
 
         return result;
-
     }
 
     private enum CommandType
@@ -303,6 +316,7 @@ public class NameRepository
         {
             await client.SendMessage(channel, msg);
         }
+
         if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_GAME) && TwitchSharkName.InWorld())
         {
             RAPI.BroadcastChatMessage(msg);

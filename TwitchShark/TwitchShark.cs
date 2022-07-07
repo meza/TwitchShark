@@ -54,7 +54,6 @@ public class TwitchSharkName : Mod
         harmonyInstance = new Harmony("hu.meza.TwitchShark");
         harmonyInstance.PatchAll();
 
-
         Log($"Twitch Shark mod {version} loaded");
     }
 
@@ -82,14 +81,13 @@ public class TwitchSharkName : Mod
 
     public void Update()
     {
-
     }
 
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
         var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
         nameTag.AddComponent<Billboard>();
-       
+
         nameTag.transform.SetParent(shark.transform);
         nameTag.transform.localPosition = new Vector3(0, 2f, 0);
         nameTag.transform.localRotation = Quaternion.identity;
@@ -102,7 +100,6 @@ public class TwitchSharkName : Mod
         nameTag.gameObject.SetLayerRecursivly(layer);
         text.renderer.material.shader = Shader.Find("TextMeshPro/Distance Field");
 
-
         if (ExtraSettingsAPI_GetComboboxSelectedItem(SETTINGS_NAME_VISIBILITY) == "above all")
         {
             text.renderer.material.shader = Shader.Find("TextMeshPro/Distance Field Overlay");
@@ -110,7 +107,6 @@ public class TwitchSharkName : Mod
 
         if (Raft_Network.IsHost)
         {
-
             var potentialTextComponent = shark.GetComponentInChildren<Text>();
             var isCrowdControlShark = potentialTextComponent != null;
 
@@ -125,17 +121,18 @@ public class TwitchSharkName : Mod
                 text.text = entry.Name;
                 text.color = GetColorFromHex(DEFAULT_COLOR);
 
-
                 if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_USE_COLORS))
                 {
                     text.color = entry.Color;
                 }
             }
+
             sharkNames.AddItem(text);
         }
 
         return text;
     }
+
     public void OnModUnload()
     {
         harmonyInstance.UnpatchAll("hu.meza.TwitchShark");
@@ -161,6 +158,7 @@ public class TwitchSharkName : Mod
     override public void WorldEvent_WorldUnloaded()
     {
         inWorld = false;
+
         if (Raft_Network.IsHost)
         {
             Debug.Log("World Unloaded");
@@ -190,6 +188,7 @@ public class TwitchSharkName : Mod
     public void FixedUpdate()
     {
         var message = RAPI.ListenForNetworkMessagesOnChannel(CHANNEL_ID);
+
         if (message != null)
         {
             if (message.message.Type == MESSAGE_TYPE_SET_NAME && !Raft_Network.IsHost)
@@ -197,33 +196,38 @@ public class TwitchSharkName : Mod
                 if (message.message is UpdateSharkNameMessage msg)
                 {
                     var maybeShark = NetworkIDManager.GetNetworkIDFromObjectIndex<AI_NetworkBehaviour>(msg.sharkId);
+
                     if (maybeShark is AI_NetworkBehavior_Shark shark)
                     {
                         var nameTag = shark.stateMachineShark.GetComponentInChildren<TextMeshPro>();
                         nameTag.text = msg.name;
 
                         var succ = ColorUtility.TryParseHtmlString(msg.color, out Color c);
+
                         if (succ)
                         {
                             nameTag.color = c;
-                        } else
+                        }
+                        else
                         {
                             if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_DEBUG))
                             {
                                 Debug.Log($"Could not convert the color: {msg.color}");
                             }
                         }
+
                         sharkNames.AddItem(nameTag);
                     }
                 }
             }
-        }   
+        }
     }
 
     [ConsoleCommand(name: "getnameentries", docs: "lists the entries for the shark name pool [debug/emergency use only]")]
     public static void ListEnteredNames()
     {
         var entries = NameRepository.GetAllEntries();
+
         foreach (var entry in entries)
         {
             Debug.Log($"{entry.Value.Name} entered at {entry.Value.EnteredOn.ToString()}");
@@ -241,12 +245,14 @@ public class TwitchSharkName : Mod
     private static void KillRandomShark()
     {
         List<Network_Entity> entities = new List<Network_Entity>();
+
         foreach (AI_NetworkBehaviour entity in FindObjectsOfType<AI_NetworkBehaviour>())
             if (entity is AI_NetworkBehavior_Shark && !entity.networkEntity.IsDead)
                 entities.Add(entity.networkEntity);
         Network_Entity target = entities[(int)(rand.NextDouble() * entities.Count)];
         Raft_Network network = target.Network;
         Message_NetworkEntity_Damage message = new Message_NetworkEntity_Damage(Messages.DamageEntity, network.NetworkIDManager, ComponentManager<Network_Host_Entities>.Value.ObjectIndex, target.ObjectIndex, target.stat_health.Value, target.transform.position, Vector3.up, EntityType.Environment, null);
+
         if (Raft_Network.IsHost)
         {
             target.Damage(message.damage, message.HitPosition, message.HitNormal, message.damageInflictorEntityType, null);
@@ -268,12 +274,10 @@ public class TwitchSharkName : Mod
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
-
     }
 
     public void ExtraSettingsAPI_SettingsOpen() // Occurs when user opens the settings menu
     {
-
     }
 
     public void ExtraSettingsAPI_SettingsClose() // Occurs when user closes the settings menu
@@ -290,12 +294,13 @@ public class TwitchSharkName : Mod
                 {
                     Debug.Log("Twitch settings have changed, reconnecting");
                 }
+
                 names.Stop();
                 Initialise();
             }
         }
-
     }
+
     public static int ExtraSettingsAPI_GetComboboxSelectedIndex(string SettingName) => -1;
     public static string ExtraSettingsAPI_GetComboboxSelectedItem(string SettingName) => "";
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
@@ -304,6 +309,7 @@ public class TwitchSharkName : Mod
     public static void ExtraSettingsAPI_SetDataValues(string SettingName, Dictionary<string, string> values) { }
     public static string ExtraSettingsAPI_GetDataValue(string SettingName, string subname) => "";
     public static string[] ExtraSettingsAPI_GetDataNames(string SettingName) => new string[0];
+
     public void ExtraSettingsAPI_ButtonPress(string name) // Occurs when a settings button is clicked. "name" is set the the button's name
     {
         if (name == SETTINGS_TEST_TWITCH_BUTTON)
@@ -337,6 +343,7 @@ public class TwitchSharkName : Mod
             SuccessNotification("Entries have been cleared.\nA new pool has been opened!");
         }
     }
+
     public static void OnAsyncMethodFailed(Task task)
     {
         Exception ex = task.Exception;
@@ -357,5 +364,4 @@ public class TwitchSharkName : Mod
     {
         return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5, HNotify.CheckSprite);
     }
-
 }
