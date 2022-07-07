@@ -74,6 +74,20 @@
       "values": [ "never", "5 minutes", "10 minutes", "15 minutes", "30 minutes", "1 hour", "2 hours", "4 hours" ]
     },
     {
+      "type": "combobox",
+      "name": "twitchSharkNameVisibility",
+      "text": "Shark Name Visibility",
+      "access": "both",
+      "default": "normal",
+      "values": [ "normal", "above all" ]
+    },
+    {
+      "type": "text",
+      "name": "twitchSharkVisibilityIndo",
+      "text": "Changes in the visibility setting will only take effect for newly spawned sharks",
+      "access": "both"
+    },
+    {
       "type": "checkbox",
       "name": "twitchDebug",
       "text": "Debug",

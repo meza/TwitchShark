@@ -25,6 +25,7 @@ public class TwitchSharkName : Mod
     public readonly static string SETTINGS_TIMEOUT = "twitchSharkTimeout";
     public readonly static string SETTINGS_DEBUG = "twitchDebug";
     public readonly static string SETTINGS_RESET = "twitchSharkResetEntries";
+    public readonly static string SETTINGS_NAME_VISIBILITY = "twitchSharkNameVisibility";
     static bool ExtraSettingsAPI_Loaded = false;
     //public readonly static string DEFAULT_COLOR = "#BBA16A";
     public readonly static string DEFAULT_COLOR = "#FFFFFF";
@@ -40,6 +41,7 @@ public class TwitchSharkName : Mod
     private string previousUsername = "";
     private string previousToken = "";
     private string previousChannelName = "";
+    private TextMeshPro[] sharkNames = new TextMeshPro[] { };
 
     public IEnumerator Start()
     {
@@ -77,24 +79,40 @@ public class TwitchSharkName : Mod
 
         names.Start(previousUsername, previousToken, previousChannelName, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
     }
+
+    public void Update()
+    {
+
+    }
+
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
     {
-        var potentialTextComponent = shark.GetComponentInChildren<Text>();
-        var isCrowdControlShark = potentialTextComponent != null;
-
         var nameTag = Instantiate(assets.LoadAsset<GameObject>("Name Tag"));
         nameTag.AddComponent<Billboard>();
-
+       
         nameTag.transform.SetParent(shark.transform);
         nameTag.transform.localPosition = new Vector3(0, 2f, 0);
         nameTag.transform.localRotation = Quaternion.identity;
 
         var text = nameTag.GetComponentInChildren<TextMeshPro>();
+        text.transform.parent.gameObject.SetActive(true);
+        text.outlineWidth = 0.1f;
 
+        var layer = LayerMask.NameToLayer("Particles");
+        nameTag.gameObject.SetLayerRecursivly(layer);
+        text.renderer.material.shader = Shader.Find("TextMeshPro/Distance Field");
+
+
+        if (ExtraSettingsAPI_GetComboboxSelectedItem(SETTINGS_NAME_VISIBILITY) == "above all")
+        {
+            text.renderer.material.shader = Shader.Find("TextMeshPro/Distance Field Overlay");
+        }
 
         if (Raft_Network.IsHost)
         {
-            text.outlineWidth = 0.1f;
+
+            var potentialTextComponent = shark.GetComponentInChildren<Text>();
+            var isCrowdControlShark = potentialTextComponent != null;
 
             if (isCrowdControlShark)
             {
@@ -113,7 +131,7 @@ public class TwitchSharkName : Mod
                     text.color = entry.Color;
                 }
             }
-            Debug.Log($"Adding the name: {text.text} to the shark");
+            sharkNames.AddItem(text);
         }
 
         return text;
@@ -183,10 +201,23 @@ public class TwitchSharkName : Mod
                     {
                         var nameTag = shark.stateMachineShark.GetComponentInChildren<TextMeshPro>();
                         nameTag.text = msg.name;
+
+                        var succ = ColorUtility.TryParseHtmlString(msg.color, out Color c);
+                        if (succ)
+                        {
+                            nameTag.color = c;
+                        } else
+                        {
+                            if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_DEBUG))
+                            {
+                                Debug.Log($"Could not convert the color: {msg.color}");
+                            }
+                        }
+                        sharkNames.AddItem(nameTag);
                     }
                 }
             }
-        }
+        }   
     }
 
     [ConsoleCommand(name: "getnameentries", docs: "lists the entries for the shark name pool [debug/emergency use only]")]
