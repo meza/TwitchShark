@@ -10,6 +10,7 @@ public static class AI_State_Attack_Entity_Shark_AttemptAttack
         if (Raft_Network.IsHost)
         {
             var nametag = ___stateMachineShark.GetComponentInChildren<TextMeshPro>();
+
             if (nametag != null)
             {
                 TwitchSharkName.Instance.sharkCurrentlyAttacking = nametag.text;

@@ -10,9 +10,11 @@ public class TwitchParser
         ParserState state = ParserState.STATE_NONE;
         int[] starts = new[] { 0, 0, 0, 0, 0, 0 };
         int[] lens = new[] { 0, 0, 0, 0, 0, 0 };
+
         for (int i = 0; i < raw.Length; ++i)
         {
             lens[(int)state] = i - starts[(int)state] - 1;
+
             if (state == ParserState.STATE_NONE && raw[i] == '@')
             {
                 state = ParserState.STATE_V3;
@@ -20,6 +22,7 @@ public class TwitchParser
 
                 int start = i;
                 string key = null;
+
                 for (; i < raw.Length; ++i)
                 {
                     if (raw[i] == '=')
@@ -33,6 +36,7 @@ public class TwitchParser
                             tagDict[raw.Substring(start, i - start)] = "1";
                         else
                             tagDict[key] = raw.Substring(start, i - start);
+
                         start = i + 1;
                     }
                     else if (raw[i] == ' ')
