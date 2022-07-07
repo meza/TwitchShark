@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.7.3](https://github.com/meza/TwitchShark/compare/v1.7.2...v1.7.3) (2022-07-07)
+
+
+### Bug Fixes
+
+* fixed the underwater nameplate rendering ([fae29db](https://github.com/meza/TwitchShark/commit/fae29db1f83cf9bdb530d93746eabd2373787fcd))
+
 ## [1.7.2](https://github.com/meza/TwitchShark/compare/v1.7.1...v1.7.2) (2022-07-06)
 
 
