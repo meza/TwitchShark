@@ -202,9 +202,16 @@ public class TwitchSharkName : Mod
                         var nameTag = shark.stateMachineShark.GetComponentInChildren<TextMeshPro>();
                         nameTag.text = msg.name;
 
-                        if(ColorUtility.TryParseHtmlString(msg.color, out Color c))
+                        var succ = ColorUtility.TryParseHtmlString(msg.color, out Color c);
+                        if (succ)
                         {
                             nameTag.color = c;
+                        } else
+                        {
+                            if (ExtraSettingsAPI_GetCheckboxState(SETTINGS_DEBUG))
+                            {
+                                Debug.Log($"Could not convert the color: {msg.color}");
+                            }
                         }
                         sharkNames.AddItem(nameTag);
                     }

@@ -16,7 +16,8 @@ public static class AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch
             }
 
             var name = nametag.text;
-            var color = ColorUtility.ToHtmlStringRGBA(nametag.color); ;
+
+            var color = $"#{ColorUtility.ToHtmlStringRGBA(nametag.color).Substring(0, 6)}";
             RAPI.SendNetworkMessage(new UpdateSharkNameMessage(TwitchSharkName.MESSAGE_TYPE_SET_NAME, __instance.ObjectIndex, name, color), channel: TwitchSharkName.CHANNEL_ID);
         }
     }
