@@ -46,7 +46,6 @@
     <Compile Include="patches\AI_NetworkBehavior_Shark_Serialize_Update_Animal_Patch.cs" />
     <Compile Include="patches\AI_State_Attack_Entity_Shark_AttemptAttack.cs" />
     <Compile Include="patches\AI_StateMachine_Shark_Start_Patch.cs" />
-    <Compile Include="patches\PlayerStats_Damage_Patch.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
