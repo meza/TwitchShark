@@ -62,11 +62,18 @@ public class NameRepository
         return activeChattersWithColours;
     }
 
-    private bool ShouldAddName(TwitchChatMessage message)
+    private bool ExistsAndValid(TwitchChatMessage message)
     {
         if (message.Sender.Username.ToLower() == username.ToLower()) return false;
 
         if (blacklist.Contains(message.Sender.Username.ToLower())) return false;
+
+        return true;
+    }
+
+    private bool ShouldAddName(TwitchChatMessage message)
+    {
+        if (!ExistsAndValid(message)) return false;
 
         var subOnly = TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_SUB_ONLY);
 
@@ -101,6 +108,13 @@ public class NameRepository
         }
 
         TwitchSharkName.ErrorNotification("Could not connect to Twitch. Please check your settings.");
+    }
+
+    private void UpdateTime(TwitchChatMessage message) { 
+        if (ExistsAndValid(message))
+        {
+            activeChattersWithColours[message.Sender.Username.ToLower()].EnteredOn = DateTime.Now;
+        }
     }
 
     private async void OnMessage(object sender, TwitchChatMessage message)
@@ -174,7 +188,10 @@ public class NameRepository
 
         if (processedMessage.Type == CommandType.REGULAR)
         {
-            if (!ShouldAddName(message)) return;
+            if (!ShouldAddName(message)) {
+                UpdateTime(message);
+                return;
+            };
 
             activeChattersWithColours.Add(message.Sender.Username, new NameEntry
             {
