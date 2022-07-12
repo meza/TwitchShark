@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.7.4](https://github.com/meza/TwitchShark/compare/v1.7.3...v1.7.4) (2022-07-12)
+
+
+### Bug Fixes
+
+* names will now not suddenly time out if they are active in chat ([707314d](https://github.com/meza/TwitchShark/commit/707314d099899e8492690636cd7505129bd8d8a1))
+
 ## [1.7.3](https://github.com/meza/TwitchShark/compare/v1.7.2...v1.7.3) (2022-07-07)
 
 
