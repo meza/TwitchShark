@@ -11,24 +11,24 @@ using UnityEngine.UI;
 public class TwitchSharkName : Mod
 {
     public static string version = "VERSION";
-    public readonly static string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
-    public readonly static string SETTINGS_USERNAME = "twitchUsername";
-    public readonly static string SETTINGS_TOKEN = "twitchToken";
-    public readonly static string SETTINGS_CHANNEL = "twitchChannel";
-    public readonly static string SETTINGS_DEFAULT_SHARK_NAME = "twitchDefaultSharkName";
-    public readonly static string SETTINGS_SUB_ONLY = "twitchSubOnly";
-    public readonly static string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
-    public readonly static string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
-    public readonly static string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
-    public readonly static string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
-    public readonly static string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
-    public readonly static string SETTINGS_TIMEOUT = "twitchSharkTimeout";
-    public readonly static string SETTINGS_DEBUG = "twitchDebug";
-    public readonly static string SETTINGS_RESET = "twitchSharkResetEntries";
-    public readonly static string SETTINGS_NAME_VISIBILITY = "twitchSharkNameVisibility";
+    public static readonly string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
+    public static readonly string SETTINGS_USERNAME = "twitchUsername";
+    public static readonly string SETTINGS_TOKEN = "twitchToken";
+    public static readonly string SETTINGS_CHANNEL = "twitchChannel";
+    public static readonly string SETTINGS_DEFAULT_SHARK_NAME = "twitchDefaultSharkName";
+    public static readonly string SETTINGS_SUB_ONLY = "twitchSubOnly";
+    public static readonly string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
+    public static readonly string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
+    public static readonly string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
+    public static readonly string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
+    public static readonly string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
+    public static readonly string SETTINGS_TIMEOUT = "twitchSharkTimeout";
+    public static readonly string SETTINGS_DEBUG = "twitchDebug";
+    public static readonly string SETTINGS_RESET = "twitchSharkResetEntries";
+    public static readonly string SETTINGS_NAME_VISIBILITY = "twitchSharkNameVisibility";
     static bool ExtraSettingsAPI_Loaded = false;
     //public readonly static string DEFAULT_COLOR = "#BBA16A";
-    public readonly static string DEFAULT_COLOR = "#FFFFFF";
+    public static readonly string DEFAULT_COLOR = "#FFFFFF";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
     public static TwitchSharkName Instance;
@@ -141,7 +141,7 @@ public class TwitchSharkName : Mod
         Log("Twitch Shark Name mod unloaded");
     }
 
-    override public void WorldEvent_WorldLoaded()
+    public override void WorldEvent_WorldLoaded()
     {
         inWorld = true;
 
@@ -155,7 +155,7 @@ public class TwitchSharkName : Mod
         }
     }
 
-    override public void WorldEvent_WorldUnloaded()
+    public override void WorldEvent_WorldUnloaded()
     {
         inWorld = false;
 
