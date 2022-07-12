@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using TMPro;
-using UnityEngine;
 
 [HarmonyPatch(typeof(AI_State_Attack_Entity_Shark), "AttemptAttack")]
 public static class AI_State_Attack_Entity_Shark_AttemptAttack

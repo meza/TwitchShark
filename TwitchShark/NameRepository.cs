@@ -12,7 +12,7 @@ public class NameRepository
     private string username;
     private HNotification connectionNotification;
     private CancellationTokenSource cts;
-    private readonly static Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry>();
+    private static readonly Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry>();
     private HashSet<string> blacklist;
     private bool isTest = false;
 
@@ -110,7 +110,8 @@ public class NameRepository
         TwitchSharkName.ErrorNotification("Could not connect to Twitch. Please check your settings.");
     }
 
-    private void UpdateTime(TwitchChatMessage message) { 
+    private void UpdateTime(TwitchChatMessage message)
+    {
         if (ExistsAndValid(message))
         {
             activeChattersWithColours[message.Sender.Username.ToLower()].EnteredOn = DateTime.Now;
@@ -188,7 +189,8 @@ public class NameRepository
 
         if (processedMessage.Type == CommandType.REGULAR)
         {
-            if (!ShouldAddName(message)) {
+            if (!ShouldAddName(message))
+            {
                 UpdateTime(message);
                 return;
             };
