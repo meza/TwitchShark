@@ -41,6 +41,7 @@ public class Twitch
         public string Color { get; set; }
     }
 
+    [Serializable]
     public class TwitchChatMessage : EventArgs
     {
         public DateTime DateTime { get; set; }

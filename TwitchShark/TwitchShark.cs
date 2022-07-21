@@ -31,6 +31,10 @@ public class TwitchSharkName : Mod
     public static readonly string DEFAULT_COLOR = "#FFFFFF";
     public static int CHANNEL_ID = 588;
     public static Messages MESSAGE_TYPE_SET_NAME = (Messages)524;
+    public static Messages MESSAGE_TYPE_NEW_NAME_CANDIDATE = (Messages)525;
+    public static Messages MESSAGE_TYPE_NEW_CHATTER = (Messages)526;
+    public static Messages MESSAGE_TYPE_REFRESH_CHATTER = (Messages)527;
+    public static Messages MESSAGE_TYPE_CHATTER_REMOVED = (Messages)528;
     public static TwitchSharkName Instance;
     public static System.Random rand = new System.Random();
     public string sharkCurrentlyAttacking;
@@ -191,6 +195,41 @@ public class TwitchSharkName : Mod
 
         if (message != null)
         {
+            if (message.message.Type == MESSAGE_TYPE_NEW_NAME_CANDIDATE && Raft_Network.IsHost) {
+                if (message.message is NewChatterCandidateMessage msg)
+                {
+                    Network_Player originPlayer = NetworkIDManager.GetNetworkIDFromObjectIndex<Network_Player>(msg.originId);
+                    names.AddName(msg.message, originPlayer);
+                    
+                }
+            }
+
+            if (message.message.Type == MESSAGE_TYPE_NEW_CHATTER && !Raft_Network.IsHost)
+            {
+                if (message.message is NewChatterCandidateMessage msg)
+                {
+                    Network_Player originPlayer = NetworkIDManager.GetNetworkIDFromObjectIndex<Network_Player>(msg.originId);
+                    names.StoreName(msg.message, originPlayer);
+
+                }
+            }
+
+            if (message.message.Type == MESSAGE_TYPE_REFRESH_CHATTER && Raft_Network.IsHost)
+            {
+                if (message.message is RefreshChatterMessage msg)
+                {
+                    names.UpdateTime(msg.message);
+                }
+            }
+
+            if (message.message.Type == MESSAGE_TYPE_CHATTER_REMOVED && !Raft_Network.IsHost)
+            {
+                if (message.message is ChatterRemovedMessage msg)
+                {
+                    names.RemoveName(msg.username);
+                }
+            }
+
             if (message.message.Type == MESSAGE_TYPE_SET_NAME && !Raft_Network.IsHost)
             {
                 if (message.message is UpdateSharkNameMessage msg)

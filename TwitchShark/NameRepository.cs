@@ -71,7 +71,7 @@ public class NameRepository
         return true;
     }
 
-    private bool ShouldAddName(TwitchChatMessage message)
+    public bool ShouldAddName(TwitchChatMessage message)
     {
         if (!ExistsAndValid(message)) return false;
 
@@ -110,12 +110,87 @@ public class NameRepository
         TwitchSharkName.ErrorNotification("Could not connect to Twitch. Please check your settings.");
     }
 
-    private void UpdateTime(TwitchChatMessage message)
+    public void UpdateTime(TwitchChatMessage message)
     {
         if (ExistsAndValid(message))
         {
             activeChattersWithColours[message.Sender.Username.ToLower()].EnteredOn = DateTime.Now;
         }
+    }
+
+    private async void NotifyChatter(TwitchChatMessage message, Network_Player origin)
+    {
+        if (origin != RAPI.GetLocalPlayer()) return; 
+
+        var msg = $"{message.Sender.Username} just entered the Shark Name Pool";
+
+        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
+        {
+            await client.SendMessage(message.Channel, $"@{msg}");
+        }
+
+        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_GAME) && TwitchSharkName.InWorld())
+        {
+            RAPI.BroadcastChatMessage(msg);
+        }
+    }
+
+    public void StoreName(TwitchChatMessage message, Network_Player origin)
+    {
+        activeChattersWithColours.Add(message.Sender.Username, new NameEntry
+        {
+            Color = TwitchSharkName.GetColorFromHex(message.Sender.Color),
+            Name = message.Sender.Username,
+            EnteredOn = message.DateTime
+        });
+        NotifyChatter(message, origin);
+    }
+
+    public async void AddName(TwitchChatMessage message, Network_Player origin = null)
+    {
+
+        if (!Raft_Network.IsHost) // if client
+        {
+            if (origin == null)
+            {
+                origin = RAPI.GetLocalPlayer();
+            }
+
+            if (!ShouldAddName(message))
+            {
+                RAPI.SendNetworkMessage(new RefreshChatterMessage(TwitchSharkName.MESSAGE_TYPE_REFRESH_CHATTER, origin.ObjectIndex, message), TwitchSharkName.CHANNEL_ID);
+                UpdateTime(message);
+                return;
+            };
+
+            RAPI.SendNetworkMessage(new NewChatterCandidateMessage(TwitchSharkName.MESSAGE_TYPE_NEW_NAME_CANDIDATE, origin.ObjectIndex, message), TwitchSharkName.CHANNEL_ID);
+            return;
+        }
+
+        // if is host
+
+        // if host message
+        if (origin == null)
+        {
+            if (!ShouldAddName(message))
+            {
+                UpdateTime(message);
+                return;
+            };
+            origin = RAPI.GetLocalPlayer();
+        }
+
+        if (activeChattersWithColours.Keys.Contains(message.Sender.Username))
+        {
+            UpdateTime(message);
+            return;
+        }
+
+
+        StoreName(message, origin);
+
+        RAPI.SendNetworkMessage(new NewChatterAddedMessage(TwitchSharkName.MESSAGE_TYPE_NEW_CHATTER, origin.ObjectIndex, message), TwitchSharkName.CHANNEL_ID);
+        
     }
 
     private async void OnMessage(object sender, TwitchChatMessage message)
@@ -189,30 +264,7 @@ public class NameRepository
 
         if (processedMessage.Type == CommandType.REGULAR)
         {
-            if (!ShouldAddName(message))
-            {
-                UpdateTime(message);
-                return;
-            };
-
-            activeChattersWithColours.Add(message.Sender.Username, new NameEntry
-            {
-                Color = TwitchSharkName.GetColorFromHex(message.Sender.Color),
-                Name = message.Sender.Username,
-                EnteredOn = message.DateTime
-            });
-
-            var msg = $"{message.Sender.Username} just entered the Shark Name Pool";
-
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_TWITCH))
-            {
-                await client.SendMessage(message.Channel, $"@{msg}");
-            }
-
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_ANNOUNCE_GAME) && TwitchSharkName.InWorld())
-            {
-                RAPI.BroadcastChatMessage(msg);
-            }
+            AddName(message);
         }
     }
 
@@ -246,13 +298,32 @@ public class NameRepository
                 Debug.Log($"{username}'s entry has timed out. Removing them from the list");
             }
 
-            activeChattersWithColours.Remove(username);
+            RemoveName(username);
             return Next();
         }
 
         Debug.Log($"Randomly chosen the name: {username}");
-        activeChattersWithColours.Remove(username);
+        RemoveName(username);
         return entry;
+    }
+
+    public void RemoveName(String username)
+    {
+        activeChattersWithColours.Remove(username);
+        if (Raft_Network.IsHost)
+        {
+            RAPI.SendNetworkMessage(new ChatterRemovedMessage(TwitchSharkName.MESSAGE_TYPE_CHATTER_REMOVED, username), TwitchSharkName.CHANNEL_ID);
+            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            {
+                Debug.Log($"Removing {username}'s entry. Sending message");
+            }
+        } else
+        {
+            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            {
+                Debug.Log($"Host asked us to remove {username}'s entry.");
+            }
+        }
     }
 
     private bool HasEntryTimedOut(NameEntry entry)

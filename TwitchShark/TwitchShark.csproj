@@ -39,6 +39,10 @@
   <ItemGroup>
     <Compile Include="Billboard.cs" />
     <Compile Include="NameRepository.cs" />
+    <Compile Include="ChatterRemovedMessage.cs" />
+    <Compile Include="NewChatterAddedMessage.cs" />
+    <Compile Include="RefreshChatterMessage.cs" />
+    <Compile Include="NewChatterCandidateMessage.cs" />
     <Compile Include="Twitch.cs" />
     <Compile Include="TwitchParser.cs" />
     <Compile Include="TwitchShark.cs" />
