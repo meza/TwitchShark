@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.7.5](https://github.com/meza/TwitchShark/compare/v1.7.4...v1.7.5) (2022-07-21)
+
+
+### Bug Fixes
+
+* fixed the key error ([ccd04bd](https://github.com/meza/TwitchShark/commit/ccd04bd8cfc97fc79bb8f2b029f67b63005bdc5f))
+
 ## [1.7.4](https://github.com/meza/TwitchShark/compare/v1.7.3...v1.7.4) (2022-07-12)
 
 
