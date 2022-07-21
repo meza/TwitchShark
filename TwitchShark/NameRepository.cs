@@ -114,7 +114,9 @@ public class NameRepository
     {
         if (ExistsAndValid(message))
         {
-            activeChattersWithColours[message.Sender.Username.ToLower()].EnteredOn = DateTime.Now;
+            if (!activeChattersWithColours.Keys.Contains(message.Sender.Username)) return;
+
+            activeChattersWithColours[message.Sender.Username].EnteredOn = DateTime.Now;
         }
     }
 
