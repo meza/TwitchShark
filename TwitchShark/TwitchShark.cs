@@ -35,6 +35,8 @@ public class TwitchSharkName : Mod
     public static Messages MESSAGE_TYPE_NEW_CHATTER = (Messages)526;
     public static Messages MESSAGE_TYPE_REFRESH_CHATTER = (Messages)527;
     public static Messages MESSAGE_TYPE_CHATTER_REMOVED = (Messages)528;
+    public static Messages MESSAGE_TYPE_CHATTER_REFRESHED = (Messages)529;
+    public static Messages MESSAGE_TYPE_CLEAR_NAMES = (Messages)530;
     public static TwitchSharkName Instance;
     public static System.Random rand = new System.Random();
     public string sharkCurrentlyAttacking;
@@ -45,7 +47,6 @@ public class TwitchSharkName : Mod
     private string previousUsername = "";
     private string previousToken = "";
     private string previousChannelName = "";
-    private TextMeshPro[] sharkNames = new TextMeshPro[] { };
 
     public IEnumerator Start()
     {
@@ -63,7 +64,7 @@ public class TwitchSharkName : Mod
 
     private void Initialise(bool isTest = false)
     {
-        if (Raft_Network.IsHost && !ExtraSettingsAPI_Loaded)
+        if (!ExtraSettingsAPI_Loaded)
         {
             ErrorNotification("Twitch Shark can't start.\nThe Extra Settings Mod is missing.");
             return;
@@ -81,10 +82,6 @@ public class TwitchSharkName : Mod
         }
 
         names.Start(previousUsername, previousToken, previousChannelName, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
-    }
-
-    public void Update()
-    {
     }
 
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
@@ -130,8 +127,6 @@ public class TwitchSharkName : Mod
                     text.color = entry.Color;
                 }
             }
-
-            sharkNames.AddItem(text);
         }
 
         return text;
@@ -149,26 +144,18 @@ public class TwitchSharkName : Mod
     {
         inWorld = true;
 
-        if (Raft_Network.IsHost)
-        {
-            Initialise();
-        }
-        else
-        {
-            SuccessNotification("Twitch Shark enabled on host. Have fun!");
-        }
+        Initialise();
     }
 
     public override void WorldEvent_WorldUnloaded()
     {
         inWorld = false;
 
-        if (Raft_Network.IsHost)
-        {
-            Debug.Log("World Unloaded");
-            names.Stop();
-            names.Reset();
-        }
+
+        Debug.Log("World Unloaded");
+        names.Stop();
+        names.Reset();
+
     }
 
     public static bool InWorld()
@@ -195,40 +182,7 @@ public class TwitchSharkName : Mod
 
         if (message != null)
         {
-            if (message.message.Type == MESSAGE_TYPE_NEW_NAME_CANDIDATE && Raft_Network.IsHost) {
-                if (message.message is NewChatterCandidateMessage msg)
-                {
-                    Network_Player originPlayer = NetworkIDManager.GetNetworkIDFromObjectIndex<Network_Player>(msg.originId);
-                    names.AddName(msg.message, originPlayer);
-                    
-                }
-            }
-
-            if (message.message.Type == MESSAGE_TYPE_NEW_CHATTER && !Raft_Network.IsHost)
-            {
-                if (message.message is NewChatterCandidateMessage msg)
-                {
-                    Network_Player originPlayer = NetworkIDManager.GetNetworkIDFromObjectIndex<Network_Player>(msg.originId);
-                    names.StoreName(msg.message, originPlayer);
-
-                }
-            }
-
-            if (message.message.Type == MESSAGE_TYPE_REFRESH_CHATTER && Raft_Network.IsHost)
-            {
-                if (message.message is RefreshChatterMessage msg)
-                {
-                    names.UpdateTime(msg.message);
-                }
-            }
-
-            if (message.message.Type == MESSAGE_TYPE_CHATTER_REMOVED && !Raft_Network.IsHost)
-            {
-                if (message.message is ChatterRemovedMessage msg)
-                {
-                    names.RemoveName(msg.username);
-                }
-            }
+            names.OnNetworkMessage(message);
 
             if (message.message.Type == MESSAGE_TYPE_SET_NAME && !Raft_Network.IsHost)
             {
@@ -254,8 +208,6 @@ public class TwitchSharkName : Mod
                                 Debug.Log($"Could not convert the color: {msg.color}");
                             }
                         }
-
-                        sharkNames.AddItem(nameTag);
                     }
                 }
             }
@@ -365,12 +317,6 @@ public class TwitchSharkName : Mod
                 return;
             }
 
-            if (!Raft_Network.IsHost)
-            {
-                ErrorNotification("Only the Host can connect to Twitch");
-                return;
-            }
-
             names.Stop();
             Initialise();
             return;
@@ -378,8 +324,14 @@ public class TwitchSharkName : Mod
 
         if (name == SETTINGS_RESET)
         {
+            if (!Raft_Network.IsHost)
+            {
+                ErrorNotification("Only the host can clear the name pool");
+                return;
+            }
+
             names.Reset();
-            SuccessNotification("Entries have been cleared.\nA new pool has been opened!");
+            
         }
     }
 
