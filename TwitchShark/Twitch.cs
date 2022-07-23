@@ -35,22 +35,6 @@ public class Twitch
         public Dictionary<string, string> Tags { get; set; }
     }
 
-    public class TwitchUser
-    {
-        public string Username { get; set; }
-        public string Color { get; set; }
-    }
-
-    public class TwitchChatMessage : EventArgs
-    {
-        public DateTime DateTime { get; set; }
-        public TwitchUser Sender { get; set; }
-        public string Message { get; set; }
-        public string Channel { get; set; }
-        public bool IsSub { get; set; }
-        public bool IsMod { get; set; }
-    }
-
     public Twitch(String username, String token)
     {
         this.Username = username;
@@ -59,7 +43,7 @@ public class Twitch
 
     private async void OnPing(TwitchCommand command)
     {
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+        if (TwitchSharkName.IsDebug())
         {
             Debug.Log("Sending PONG");
         }
@@ -102,7 +86,7 @@ public class Twitch
             IsSub = command.Tags["subscriber"] == "1",
             Message = command.Message,
             Channel = command.Parameters.TrimStart('#'),
-            DateTime = DateTime.Now
+            DateTime = DateTime.UtcNow
         };
 
         OnMessage(this, msg);
@@ -127,7 +111,7 @@ public class Twitch
                 cts.Token.ThrowIfCancellationRequested();
                 string line = await streamReader.ReadLineAsync();
 
-                if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+                if (TwitchSharkName.IsDebug())
                 {
                     Debug.Log($"Received message: {line}");
                 }
@@ -165,7 +149,7 @@ public class Twitch
         }
         catch (ObjectDisposedException e)
         {
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log("Already cancelled, no need to worry");
             }

@@ -18,7 +18,7 @@ Also **BIG SHOUTOUT** to [FranzFischer78](https://www.raftmodding.com/user/Franz
 
 - Install the [Raft Mod Loader](https://www.raftmodding.com/download)
 - Install this mod from [The Raft Mod Website](https://www.raftmodding.com/mods)
-- Install the [Settings Api Mod](https://www.raftmodding.com/mods/extra-settings-api) (only needed for the host)
+- Install the [Settings Api Mod](https://www.raftmodding.com/mods/extra-settings-api)
 
 > Optionally you can install the [Mod Updater](https://www.raftmodding.com/mods/modupdater) to make sure you always have the latest versions
 
@@ -42,15 +42,21 @@ Your moderators are allowed to use the following commands **in the twitch chat**
 
 ## MULTIPLAYER
 
-The mod WORKS in multiplayer however the experience isn't fully optimised yet.
+The mod WORKS in multiplayer.
 
 - Every person in the session needs to have this mod
-- Only the HOST needs to configure their twitch
-- All the other players can ignore the warnings the mod shows in the main menu
-
-I will be adding a proper client experience soon.
+- Only the HOST **needs** to configure their twitch
+- The other players can connect to their own tiwtch too, the chatters will be combined in the shark name pool.
+- The blacklisting is local to the clients however the host's blacklist is global. Meaning that if a name is on the host's blacklist, 
+they will never be added. But if the name is on a client's blacklist, they can still be added from another participant's chat.
+- The entries can only be cleared from the host and it will clear it out for everyone.
+- It doesn't matter where the viewer chats from, their last chat time will be updated regardless when dealing with the timeouts
+- The timeout setting is controlled by the host
 
 ## Troubleshooting
+
+Sometimes the "Connecting to twitch" notification stays up for 30 seconds. That probably means that the connection failed and twitch's api didn't respond properly.
+When that happens, reconnect from the settings!
 
 If something doesn't work, make sure to pay attention to the bottom right hand corner of the screen. An error message might pop up.
 

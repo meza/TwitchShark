@@ -33,7 +33,7 @@
     {
       "type": "input",
       "name": "twitchDefaultSharkName",
-      "text": "The default shark name",
+      "text": "The default shark name (host only)",
       "mode": "Standard",
       "default": "CHAT TO NAME THE NEXT SHARK"
     },
@@ -54,7 +54,7 @@
     {
       "type": "checkbox",
       "name": "twitchAnnounceToGame",
-      "text": "Announce new name to Game Chat",
+      "text": "Announce new name to Game Chat (host only)",
       "access": "both",
       "default": true
     },
@@ -68,7 +68,7 @@
     {
       "type": "combobox",
       "name": "twitchSharkTimeout",
-      "text": "Entries time out after",
+      "text": "Entries time out after (host only)",
       "access": "both",
       "default": "never",
       "values": [ "never", "5 minutes", "10 minutes", "15 minutes", "30 minutes", "1 hour", "2 hours", "4 hours" ]
@@ -84,7 +84,7 @@
     {
       "type": "text",
       "name": "twitchSharkVisibilityIndo",
-      "text": "Changes in the visibility setting will only take effect for newly spawned sharks",
+      "text": "Changes in the visibility setting will only take effect for new sharks",
       "access": "both"
     },
     {
