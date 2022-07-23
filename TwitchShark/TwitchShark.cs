@@ -355,4 +355,9 @@ public class TwitchSharkName : Mod
     {
         return FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, message, 5, HNotify.CheckSprite);
     }
+
+    public static bool IsDebug()
+    {
+        return TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG);
+    }
 }

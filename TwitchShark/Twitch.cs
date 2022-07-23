@@ -43,7 +43,7 @@ public class Twitch
 
     private async void OnPing(TwitchCommand command)
     {
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+        if (TwitchSharkName.IsDebug())
         {
             Debug.Log("Sending PONG");
         }
@@ -111,7 +111,7 @@ public class Twitch
                 cts.Token.ThrowIfCancellationRequested();
                 string line = await streamReader.ReadLineAsync();
 
-                if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+                if (TwitchSharkName.IsDebug())
                 {
                     Debug.Log($"Received message: {line}");
                 }
@@ -149,7 +149,7 @@ public class Twitch
         }
         catch (ObjectDisposedException e)
         {
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log("Already cancelled, no need to worry");
             }

@@ -44,7 +44,7 @@ public class NameRepository
         }
         catch (ObjectDisposedException e)
         {
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log("Already cancelled, no need to recancel");
             }
@@ -74,7 +74,7 @@ public class NameRepository
             RAPI.SendNetworkMessage(new ClearNamesMessage(TwitchSharkName.MESSAGE_TYPE_CLEAR_NAMES), TwitchSharkName.CHANNEL_ID);
         }
         activeChattersWithColours.Clear();
-        if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+        if (TwitchSharkName.IsDebug())
         {
             Debug.Log("The entries have been cleared");
         }
@@ -100,7 +100,7 @@ public class NameRepository
         {
             if (message.message is NewChatterAddedMessage msg)
             {
-                if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+                if (TwitchSharkName.IsDebug())
                 {
                     Debug.Log("Received the following message:");
                     Debug.Log($"username: {msg.message.Sender.Username} color: {msg.message.Sender.Color} originId: {msg.originId} date: {msg.message.DateTime}");
@@ -399,7 +399,7 @@ public class NameRepository
 
         if (HasEntryTimedOut(entry))
         {
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log($"{username}'s entry has timed out. Removing them from the list");
             }
@@ -410,7 +410,7 @@ public class NameRepository
 
         if (lastName == username && activeChattersWithColours.Count > 1)
         {
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log($"{username} was the previous shark. Trying someone new");
             }
@@ -429,14 +429,14 @@ public class NameRepository
         if (Raft_Network.IsHost)
         {
             RAPI.SendNetworkMessage(new ChatterRemovedMessage(TwitchSharkName.MESSAGE_TYPE_CHATTER_REMOVED, username), TwitchSharkName.CHANNEL_ID);
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log($"Removing {username}'s entry. Sending message");
             }
         }
         else
         {
-            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            if (TwitchSharkName.IsDebug())
             {
                 Debug.Log($"Host asked us to remove {username}'s entry.");
             }
