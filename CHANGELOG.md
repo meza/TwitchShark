@@ -1,5 +1,18 @@
 # Twitch Shark Changelog
 
+# [1.8.0](https://github.com/meza/TwitchShark/compare/v1.7.5...v1.8.0) (2022-07-23)
+
+
+### Bug Fixes
+
+* preventing the same name being chosen twice in a row ([3352c70](https://github.com/meza/TwitchShark/commit/3352c70f820bee4ecd72927fa46141310831cceb))
+
+
+### Features
+
+* multi-stream support for a combined shark pool ([90a7292](https://github.com/meza/TwitchShark/commit/90a72923890c56430311b0cf362d078c1d07c55a))
+* multi-streaming now takes all streamers into account ([02193c0](https://github.com/meza/TwitchShark/commit/02193c05f13c6b8070cfeace66fb008321f1f84f))
+
 ## [1.7.5](https://github.com/meza/TwitchShark/compare/v1.7.4...v1.7.5) (2022-07-21)
 
 
