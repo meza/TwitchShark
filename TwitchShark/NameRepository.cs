@@ -15,6 +15,7 @@ public class NameRepository
     private static readonly Dictionary<string, NameEntry> activeChattersWithColours = new Dictionary<string, NameEntry>();
     private HashSet<string> blacklist;
     private bool isTest = false;
+    private String lastName = "";
 
     private enum CommandType
     {
@@ -407,8 +408,18 @@ public class NameRepository
             return Next();
         }
 
+        if (lastName == username && activeChattersWithColours.Count > 1)
+        {
+            if (TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG))
+            {
+                Debug.Log($"{username} was the previous shark. Trying someone new");
+            }
+            return Next();
+        }
+
         Debug.Log($"Randomly chosen the name: {username}");
         RemoveName(username);
+        lastName = username;
         return entry;
     }
 
