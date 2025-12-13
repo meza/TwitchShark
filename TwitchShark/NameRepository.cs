@@ -110,20 +110,15 @@ public class NameRepository
     {
         if (string.IsNullOrWhiteSpace(accessToken))
         {
-            if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                Debug.LogWarning("Cannot refresh Twitch token because refresh token is missing.");
-                return false;
-            }
-
-            return await RefreshAccessTokenAsync();
+            Debug.LogWarning("Cannot connect to Twitch because no access token is available.");
+            return false;
         }
 
         if (accessTokenExpiresAt.HasValue && accessTokenExpiresAt.Value <= DateTime.UtcNow.AddMinutes(1))
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                Debug.LogWarning("Access token is expiring soon but no refresh token is available.");
+                Debug.LogWarning("Access token is expiring soon but no refresh token is available. Please re-authorize Twitch Shark.");
                 return true;
             }
 
@@ -281,6 +276,12 @@ public class NameRepository
 
     private async Task<bool> TryRecoverFromAuthenticationFailureAsync()
     {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            TwitchSharkName.ErrorNotification("Twitch authorization expired. Please open Settings and re-authorize.");
+            return false;
+        }
+
         if (!await RefreshAccessTokenAsync())
         {
             return false;

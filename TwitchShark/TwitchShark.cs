@@ -3,25 +3,26 @@ using Steamworks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class TwitchSharkName : Mod
 {
     public static string version = "VERSION";
     public static readonly string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
     public static readonly string SETTINGS_USERNAME = "twitchUsername";
-    public static readonly string SETTINGS_ACCESS_TOKEN = "twitchAccessToken";
-    public static readonly string SETTINGS_REFRESH_TOKEN = "twitchRefreshToken";
-    public static readonly string SETTINGS_CLIENT_ID = "twitchClientId";
     public static readonly string SETTINGS_CHANNEL = "twitchChannel";
     public static readonly string SETTINGS_DEFAULT_SHARK_NAME = "twitchDefaultSharkName";
     public static readonly string SETTINGS_SUB_ONLY = "twitchSubOnly";
     public static readonly string SETTINGS_ANNOUNCE_TWITCH = "twitchAnnounceToTwitch";
     public static readonly string SETTINGS_ANNOUNCE_GAME = "twitchAnnounceToGame";
     public static readonly string SETTINGS_TEST_TWITCH_BUTTON = "twitchSharkTestTwitch";
+    public static readonly string SETTINGS_AUTHORIZE_BUTTON = "twitchSharkAuthorize";
+    public static readonly string SETTINGS_DISCONNECT_BUTTON = "twitchSharkDisconnect";
     public static readonly string SETTINGS_RECONNECT_BUTTON = "twitchSharkReconnect";
     public static readonly string SETTINGS_USE_COLORS = "twitchSharkUseChatColors";
     public static readonly string SETTINGS_TIMEOUT = "twitchSharkTimeout";
@@ -32,7 +33,9 @@ public class TwitchSharkName : Mod
     public static readonly string AUTH_DATA_ACCESS_TOKEN_KEY = "accessToken";
     public static readonly string AUTH_DATA_REFRESH_TOKEN_KEY = "refreshToken";
     public static readonly string AUTH_DATA_CLIENT_ID_KEY = "clientId";
+    public static readonly string AUTH_DATA_USERNAME_KEY = "username";
     public static readonly string AUTH_DATA_ACCESS_EXPIRY_KEY = "accessTokenExpiresAt";
+    public static readonly string TWITCH_CLIENT_ID = "4fww09bygp6gzf2cq17pv20ylyzkjd";
     static bool ExtraSettingsAPI_Loaded = false;
     //public readonly static string DEFAULT_COLOR = "#BBA16A";
     public static readonly string DEFAULT_COLOR = "#FFFFFF";
@@ -57,6 +60,10 @@ public class TwitchSharkName : Mod
     private string previousClientId = "";
     private string previousChannelName = "";
     private string previousAccessTokenExpiry = "";
+    private bool skipAuthInputSync = false;
+    private bool authorizationInProgress = false;
+    private HNotification authorizationNotification;
+    private static readonly TimeSpan AuthorizationButtonTimeout = TimeSpan.FromMinutes(3);
 
     public IEnumerator Start()
     {
@@ -82,43 +89,36 @@ public class TwitchSharkName : Mod
 
         SyncAuthInputsToDataStore();
 
-        previousUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
-        previousAccessToken = GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY, SETTINGS_ACCESS_TOKEN);
-        previousRefreshToken = GetAuthDataValue(AUTH_DATA_REFRESH_TOKEN_KEY, SETTINGS_REFRESH_TOKEN);
-        previousClientId = GetAuthDataValue(AUTH_DATA_CLIENT_ID_KEY, SETTINGS_CLIENT_ID);
+        previousUsername = GetAuthDataValue(AUTH_DATA_USERNAME_KEY).ToLower();
+        previousAccessToken = GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY);
+        previousRefreshToken = GetAuthDataValue(AUTH_DATA_REFRESH_TOKEN_KEY);
+        previousClientId = ResolveClientId();
         previousChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
         previousAccessTokenExpiry = GetAuthDataValue(AUTH_DATA_ACCESS_EXPIRY_KEY);
 
-        var missingDetails = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(previousUsername))
-        {
-            missingDetails.Add("Bot username");
-        }
+        var missingInputs = new List<string>();
 
         if (string.IsNullOrWhiteSpace(previousChannelName))
         {
-            missingDetails.Add("Target channel");
+            missingInputs.Add("Target channel");
         }
 
-        if (string.IsNullOrWhiteSpace(previousAccessToken))
-        {
-            missingDetails.Add("Access token");
-        }
+        var missingAuthData = string.IsNullOrWhiteSpace(previousAccessToken) ||
+                              string.IsNullOrWhiteSpace(previousClientId) ||
+                              string.IsNullOrWhiteSpace(previousUsername);
 
-        if (string.IsNullOrWhiteSpace(previousRefreshToken))
+        if (missingInputs.Count > 0 || missingAuthData)
         {
-            missingDetails.Add("Refresh token");
-        }
+            var pieces = new List<string>();
 
-        if (string.IsNullOrWhiteSpace(previousClientId))
-        {
-            missingDetails.Add("Client ID");
-        }
+            if (missingInputs.Count > 0)
+            {
+                pieces.Add($"Missing Twitch settings: {string.Join(", ", missingInputs)}.");
+            }
 
-        if (missingDetails.Count > 0)
-        {
-            var formatted = $"Missing Twitch authentication details: {string.Join(", ", missingDetails)}. Please open Settings.";
+            pieces.Add("Open Settings and run the Twitch authorization flow.");
+
+            var formatted = string.Join(" ", pieces);
             Debug.Log(formatted);
             FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, formatted, 10, HNotify.ErrorSprite);
             return;
@@ -307,22 +307,10 @@ public class TwitchSharkName : Mod
 
     private static void SyncAuthInputsToDataStore()
     {
-        PersistAuthInput(SETTINGS_ACCESS_TOKEN, AUTH_DATA_ACCESS_TOKEN_KEY);
-        PersistAuthInput(SETTINGS_REFRESH_TOKEN, AUTH_DATA_REFRESH_TOKEN_KEY);
-        PersistAuthInput(SETTINGS_CLIENT_ID, AUTH_DATA_CLIENT_ID_KEY);
+        EnsureClientIdStored();
     }
 
-    private static void PersistAuthInput(string settingName, string targetKey)
-    {
-        var rawValue = ExtraSettingsAPI_GetInputValue(settingName);
-
-        if (!string.IsNullOrWhiteSpace(rawValue))
-        {
-            ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, targetKey, rawValue.Trim());
-        }
-    }
-
-    private static string GetAuthDataValue(string key, string fallbackSetting = null)
+    private static string GetAuthDataValue(string key)
     {
         var storedValue = ExtraSettingsAPI_GetDataValue(SETTINGS_AUTH_DATA, key);
 
@@ -331,37 +319,53 @@ public class TwitchSharkName : Mod
             return storedValue.Trim();
         }
 
-        if (!string.IsNullOrWhiteSpace(fallbackSetting))
-        {
-            var fallbackValue = ExtraSettingsAPI_GetInputValue(fallbackSetting);
-
-            if (!string.IsNullOrWhiteSpace(fallbackValue))
-            {
-                var trimmed = fallbackValue.Trim();
-                ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, key, trimmed);
-                return trimmed;
-            }
-        }
-
         return "";
+    }
+
+    private static string ResolveClientId()
+    {
+        EnsureClientIdStored();
+        return TWITCH_CLIENT_ID;
+    }
+
+    private static bool HasStoredAuthorization()
+    {
+        return !string.IsNullOrWhiteSpace(GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY)) &&
+               !string.IsNullOrWhiteSpace(GetAuthDataValue(AUTH_DATA_USERNAME_KEY));
+    }
+
+    private static void EnsureClientIdStored()
+    {
+        var trimmed = TWITCH_CLIENT_ID.Trim();
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_CLIENT_ID_KEY, trimmed);
     }
 
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
+        UpdateUsernameDisplay(GetAuthDataValue(AUTH_DATA_USERNAME_KEY));
     }
 
     public void ExtraSettingsAPI_SettingsOpen() // Occurs when user opens the settings menu
     {
+        UpdateUsernameDisplay(GetAuthDataValue(AUTH_DATA_USERNAME_KEY));
     }
 
     public void ExtraSettingsAPI_SettingsClose() // Occurs when user closes the settings menu
     {
-        SyncAuthInputsToDataStore();
-        var newUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
-        var newAccessToken = GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY, SETTINGS_ACCESS_TOKEN);
-        var newRefreshToken = GetAuthDataValue(AUTH_DATA_REFRESH_TOKEN_KEY, SETTINGS_REFRESH_TOKEN);
-        var newClientId = GetAuthDataValue(AUTH_DATA_CLIENT_ID_KEY, SETTINGS_CLIENT_ID);
+        if (skipAuthInputSync)
+        {
+            skipAuthInputSync = false;
+        }
+        else
+        {
+            SyncAuthInputsToDataStore();
+        }
+
+        var newUsername = GetAuthDataValue(AUTH_DATA_USERNAME_KEY).ToLower();
+        var newAccessToken = GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY);
+        var newRefreshToken = GetAuthDataValue(AUTH_DATA_REFRESH_TOKEN_KEY);
+        var newClientId = ResolveClientId();
         var newChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
 
         if ((newUsername != previousUsername) || (newAccessToken != previousAccessToken) || (newRefreshToken != previousRefreshToken) || (newClientId != previousClientId) || (newChannelName != previousChannelName))
@@ -379,14 +383,33 @@ public class TwitchSharkName : Mod
         }
     }
 
+    public bool ExtraSettingsAPI_HandleSettingVisible(string settingName, bool isInWorld)
+    {
+        var isAuthorized = HasStoredAuthorization();
+
+        if (settingName == SETTINGS_AUTHORIZE_BUTTON)
+        {
+            return !isAuthorized;
+        }
+
+        if (settingName == SETTINGS_USERNAME || settingName == SETTINGS_DISCONNECT_BUTTON)
+        {
+            return isAuthorized;
+        }
+
+        return true;
+    }
+
     public static int ExtraSettingsAPI_GetComboboxSelectedIndex(string SettingName) => -1;
     public static string ExtraSettingsAPI_GetComboboxSelectedItem(string SettingName) => "";
     public static string ExtraSettingsAPI_GetInputValue(string SettingName) => "";
     public static bool ExtraSettingsAPI_GetCheckboxState(string SettingName) => false;
     public static void ExtraSettingsAPI_SetDataValue(string SettingName, string subname, string value) { }
     public static void ExtraSettingsAPI_SetDataValues(string SettingName, Dictionary<string, string> values) { }
+    public static void ExtraSettingsAPI_SetSettingText(string SettingName, string value) { }
     public static string ExtraSettingsAPI_GetDataValue(string SettingName, string subname) => "";
     public static string[] ExtraSettingsAPI_GetDataNames(string SettingName) => new string[0];
+    public static void ExtraSettingsAPI_CheckSettingVisibility() { }
 
     public void ExtraSettingsAPI_ButtonPress(string name) // Occurs when a settings button is clicked. "name" is set the the button's name
     {
@@ -394,6 +417,18 @@ public class TwitchSharkName : Mod
         {
             SyncAuthInputsToDataStore();
             Initialise(true);
+            return;
+        }
+
+        if (name == SETTINGS_AUTHORIZE_BUTTON)
+        {
+            StartCoroutine(HandleAuthorizationButtonPress());
+            return;
+        }
+
+        if (name == SETTINGS_DISCONNECT_BUTTON)
+        {
+            HandleDisconnectButtonPress();
             return;
         }
 
@@ -424,6 +459,115 @@ public class TwitchSharkName : Mod
         }
     }
 
+    private IEnumerator HandleAuthorizationButtonPress()
+    {
+        if (authorizationInProgress)
+        {
+            ErrorNotification("Authorization already in progress. Complete it in your browser or wait for it to time out.");
+            yield break;
+        }
+
+        var clientId = ResolveClientId();
+
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            ErrorNotification("Unable to start Twitch authorization. Please restart the mod or reinstall it.");
+            yield break;
+        }
+
+        authorizationInProgress = true;
+        authorizationNotification = LoadingNotification("Waiting for Twitch authorization in your browser...");
+        var flow = new TwitchAuthorizationFlow(clientId);
+
+        using (var cts = new CancellationTokenSource(AuthorizationButtonTimeout))
+        {
+            var task = flow.ExecuteAsync(cts.Token);
+
+            while (!task.IsCompleted)
+            {
+                yield return null;
+            }
+
+            authorizationNotification?.Close();
+            authorizationNotification = null;
+            authorizationInProgress = false;
+
+            if (task.IsCanceled || task.Status == TaskStatus.Canceled)
+            {
+                ErrorNotification("Authorization timed out. Please try again.");
+                yield break;
+            }
+
+            if (task.IsFaulted)
+            {
+                var root = task.Exception?.GetBaseException();
+                Debug.LogError(root ?? task.Exception);
+                ErrorNotification($"Authorization failed: {root?.Message ?? "See console for details."}");
+                yield break;
+            }
+
+            var result = task.Result;
+            PersistAuthorizedTokens(result);
+        }
+    }
+
+    private void HandleDisconnectButtonPress()
+    {
+        if (!HasStoredAuthorization())
+        {
+            UpdateUsernameDisplay("");
+            return;
+        }
+
+        ClearStoredAuthorization();
+        names.Stop();
+        SuccessNotification("Disconnected from Twitch. Run authorization again whenever you're ready.");
+        UpdateUsernameDisplay("");
+    }
+
+    private void PersistAuthorizedTokens(TwitchAuthorizationResult result)
+    {
+        if (result == null)
+        {
+            return;
+        }
+
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_ACCESS_TOKEN_KEY, result.AccessToken ?? "");
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_REFRESH_TOKEN_KEY, result.RefreshToken ?? "");
+        EnsureClientIdStored();
+
+        var expiryValue = result.AccessTokenExpiresAt.HasValue ? result.AccessTokenExpiresAt.Value.ToString("o") : "";
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_ACCESS_EXPIRY_KEY, expiryValue);
+
+        previousAccessToken = result.AccessToken ?? previousAccessToken;
+        previousRefreshToken = result.RefreshToken ?? "";
+        previousClientId = TWITCH_CLIENT_ID;
+        previousAccessTokenExpiry = expiryValue;
+
+        skipAuthInputSync = true;
+        SuccessNotification("Twitch authorization complete. Credentials saved.");
+        StartCoroutine(UpdateAuthorizedUserAsync(result.AccessToken));
+
+        if (inWorld && Raft_Network.IsHost)
+        {
+            names.Stop();
+            Initialise();
+        }
+    }
+
+    private void ClearStoredAuthorization()
+    {
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_ACCESS_TOKEN_KEY, "");
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_REFRESH_TOKEN_KEY, "");
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_ACCESS_EXPIRY_KEY, "");
+        ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_USERNAME_KEY, "");
+
+        previousAccessToken = "";
+        previousRefreshToken = "";
+        previousAccessTokenExpiry = "";
+        previousUsername = "";
+    }
+
     public static void OnAsyncMethodFailed(Task task)
     {
         Exception ex = task.Exception;
@@ -448,5 +592,78 @@ public class TwitchSharkName : Mod
     public static bool IsDebug()
     {
         return TwitchSharkName.ExtraSettingsAPI_GetCheckboxState(TwitchSharkName.SETTINGS_DEBUG);
+    }
+
+    private IEnumerator UpdateAuthorizedUserAsync(string accessToken)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            yield break;
+        }
+
+        using (var request = UnityWebRequest.Get("https://id.twitch.tv/oauth2/validate"))
+        {
+            request.SetRequestHeader("Authorization", $"OAuth {accessToken}");
+            yield return request.SendWebRequest();
+
+#if UNITY_2020_2_OR_NEWER
+            var failed = request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError;
+#else
+            var failed = request.isNetworkError || request.isHttpError;
+#endif
+
+            if (failed)
+            {
+                Debug.LogWarning($"Failed to fetch authorized Twitch user: {request.error}");
+                UpdateUsernameDisplay("");
+                yield break;
+            }
+
+            var payload = request.downloadHandler.text;
+            var parsed = JsonUtility.FromJson<TwitchValidationResponse>(payload);
+
+            if (parsed == null || string.IsNullOrWhiteSpace(parsed.login))
+            {
+                Debug.LogWarning("Twitch validation response missing login.");
+                UpdateUsernameDisplay("");
+                yield break;
+            }
+
+            var normalizedLogin = parsed.login.Trim().ToLower();
+            ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, AUTH_DATA_USERNAME_KEY, normalizedLogin);
+            previousUsername = normalizedLogin;
+            UpdateUsernameDisplay(normalizedLogin);
+        }
+    }
+
+    private void UpdateUsernameDisplay(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            ExtraSettingsAPI_SetSettingText(SETTINGS_USERNAME, "Twitch Username: Not authorized");
+        }
+        else
+        {
+            ExtraSettingsAPI_SetSettingText(SETTINGS_USERNAME, $"Twitch Username: {username}");
+        }
+
+        RefreshConnectionUiVisibility();
+    }
+
+    private void RefreshConnectionUiVisibility()
+    {
+        if (ExtraSettingsAPI_Loaded)
+        {
+            ExtraSettingsAPI_CheckSettingVisibility();
+        }
+    }
+
+    [Serializable]
+    private class TwitchValidationResponse
+    {
+        public string client_id;
+        public string login;
+        public string user_id;
+        public int expires_in;
     }
 }

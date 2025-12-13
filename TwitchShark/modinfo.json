@@ -13,28 +13,30 @@
   "excludedFiles": [],
   "modSettings": [
     {
-      "type": "input",
+      "name": "account",
+      "type": "section",
+      "text": "Account details"
+    },
+    {
+      "type": "button",
+      "name": "twitchSharkAuthorize",
+      "text": "Authorize Twitch (opens browser)",
+      "section": "mysection",
+      "access": "globalcustom"
+    },
+    {
+      "type": "text",
       "name": "twitchUsername",
-      "text": "Twitch Bot Username (must match token account)",
-      "mode": "Standard"
+      "text": "Twitch Username: Not authorized",
+      "section": "mysection",
+      "access": "globalcustom"
     },
     {
-      "type": "input",
-      "name": "twitchAccessToken",
-      "text": "Twitch Access Token",
-      "mode": "Password"
-    },
-    {
-      "type": "input",
-      "name": "twitchRefreshToken",
-      "text": "Twitch Refresh Token",
-      "mode": "Password"
-    },
-    {
-      "type": "input",
-      "name": "twitchClientId",
-      "text": "Twitch Client ID",
-      "mode": "Password"
+      "type": "button",
+      "name": "twitchSharkDisconnect",
+      "text": "Disconnect Twitch",
+      "section": "mysection",
+      "access": "globalcustom"
     },
     {
       "type": "input",

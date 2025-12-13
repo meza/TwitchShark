@@ -48,6 +48,7 @@
     <Compile Include="NewChatterCandidateMessage.cs" />
     <Compile Include="SharkChatter.cs" />
     <Compile Include="Twitch.cs" />
+    <Compile Include="TwitchAuthorizationFlow.cs" />
     <Compile Include="TwitchChatMessage.cs" />
     <Compile Include="TwitchParser.cs" />
     <Compile Include="TwitchShark.cs" />

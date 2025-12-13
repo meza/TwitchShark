@@ -28,8 +28,15 @@ Once you have all of the above installed, start the game through the mod loader,
 
 Then head into the main settings of the game, on the last tab you'll have the MOD settings.
 
-Head to [https://twitchtokengenerator.com/](https://twitchtokengenerator.com/) and use the **Bot Chat Token** flow. Authorize the Twitch account you want the bot to run as (this can be your own username), then copy the generated **Access Token**, **Refresh Token**, and **Client ID** into the mod settings (`twitchAccessToken`, `twitchRefreshToken`, `twitchClientId`).  
-Set the **Twitch Bot Username** field to the exact same Twitch username you just authorized; Twitch will reject the connection if the nickname and tokens don’t match. The Extra Settings API persists these securely for you.  
+### Authorize the bot account
+
+1. Click **Authorize Twitch (opens browser)** first. Your default browser opens Twitch’s OAuth consent page so you can use password managers and view the URL directly.
+2. Approve the request. When the browser shows “Authorization complete”, return to Raft; the mod automatically saves the credentials and fills in the Twitch username for you—no manual copy/paste required.
+   - If Windows Defender blocks the browser callback, allow inbound connections to `http://localhost:37081/twitch-shark/oauth` (for example via `netsh advfirewall firewall add rule name="TwitchShark OAuth" dir=in action=allow protocol=TCP localport=37081`).
+   - Access tokens eventually expire (this is a Twitch restriction), so repeat the authorization when the mod tells you to reconnect.
+3. After the browser finishes, the settings tab hides the authorize button and replaces it with your Twitch username plus a **Disconnect Twitch** button. Use Disconnect whenever you want to clear the saved credentials or swap accounts.
+4. Set **Twitch Channel** to the chat you want to track and adjust the other options as needed.
+
 > The legacy token from [twitchapps.com/tmi](https://twitchapps.com/tmi) is no longer sufficient for authentication.
 
 ## Usage
