@@ -22,31 +22,6 @@ Read more in the project's README.md
 - Agent-optimized: JSON output, ready work detection, discovered-from links
 - Prevents duplicate tracking systems and confusion
 
-### Quick Start
-
-**Check for ready work:**
-```bash
-bd ready --json
-```
-
-**Create new issues:**
-```bash
-bd create "Issue title" -t bug|feature|task -p 0-4 --json
-bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
-bd create "Subtask" --parent <epic-id> --json  # Hierarchical subtask (gets ID like epic-id.1)
-```
-
-**Claim and update:**
-```bash
-bd update bd-42 --status in_progress --json
-bd update bd-42 --priority 1 --json
-```
-
-**Complete work:**
-```bash
-bd close bd-42 --reason "Completed" --json
-```
-
 ### Issue Types
 
 - `bug` - Something broken
@@ -95,7 +70,6 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 - Always use `--json` flag for programmatic use
 - Link discovered work with `discovered-from` dependencies
 - Check `bd ready` before asking "what should I work on?"
-- Store AI planning docs in `history/` directory
 - Run `bd <cmd> --help` to discover available flags
 - Do NOT create markdown TODO lists
 - Do NOT use external issue trackers

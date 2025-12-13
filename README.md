@@ -28,9 +28,9 @@ Once you have all of the above installed, start the game through the mod loader,
 
 Then head into the main settings of the game, on the last tab you'll have the MOD settings.
 
-Head to [https://twitchapps.com/tmi](https://twitchapps.com/tmi) to get yourself an oauth key for your tiwtch bot user (can be your own username too)
-
-Use that in the settings.
+Head to [https://twitchtokengenerator.com/](https://twitchtokengenerator.com/) and use the **Bot Chat Token** flow. Authorize the Twitch account you want the bot to run as (this can be your own username), then copy the generated **Access Token**, **Refresh Token**, and **Client ID** into the mod settings (`twitchAccessToken`, `twitchRefreshToken`, `twitchClientId`).  
+Set the **Twitch Bot Username** field to the exact same Twitch username you just authorized; Twitch will reject the connection if the nickname and tokens don’t match. The Extra Settings API persists these securely for you.  
+> The legacy token from [twitchapps.com/tmi](https://twitchapps.com/tmi) is no longer sufficient for authentication.
 
 ## Usage
 

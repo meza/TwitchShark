@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using static Twitch;
 
 public class NameRepository
@@ -16,6 +18,13 @@ public class NameRepository
     private HashSet<string> blacklist;
     private bool isTest = false;
     private String lastName = "";
+    private string channel;
+    private string accessToken;
+    private string refreshToken;
+    private string clientId;
+    private DateTime? accessTokenExpiresAt;
+    private readonly SemaphoreSlim tokenRefreshLock = new SemaphoreSlim(1, 1);
+    private const string TokenRefreshUrl = "https://id.twitch.tv/oauth2/token";
 
     private enum CommandType
     {
@@ -37,7 +46,7 @@ public class NameRepository
         {
             Debug.Log("Stop requested");
 
-            if (cts.Token.CanBeCanceled)
+            if (cts != null && cts.Token.CanBeCanceled)
             {
                 cts.Cancel();
             }
@@ -49,22 +58,245 @@ public class NameRepository
                 Debug.Log("Already cancelled, no need to recancel");
             }
         }
+        finally
+        {
+            if (client != null)
+            {
+                client.OnMessage -= OnMessage;
+                client.OnConnection -= OnConnection;
+                client = null;
+            }
+
+            cts = null;
+        }
     }
 
-    public async Task Start(String username, String token, String channel, bool isTest = false)
+    public async Task Start(String username, String accessToken, String refreshToken, String clientId, String channel, String accessTokenExpiry, bool isTest = false)
     {
         this.isTest = isTest;
         blacklist = new HashSet<string>(TwitchSharkName.ExtraSettingsAPI_GetDataNames(TwitchSharkName.SETTINGS_BLACKLIST));
         this.username = username;
+        this.channel = channel;
+        this.accessToken = accessToken?.Trim();
+        this.refreshToken = refreshToken?.Trim();
+        this.clientId = clientId?.Trim();
+        accessTokenExpiresAt = ParseAccessTokenExpiry(accessTokenExpiry);
+
+        if (!await EnsureTokenFreshnessAsync())
+        {
+            TwitchSharkName.ErrorNotification("Unable to refresh Twitch credentials. Please update your tokens.");
+            return;
+        }
+
+        await ConnectToTwitchAsync();
+    }
+
+    private DateTime? ParseAccessTokenExpiry(string rawValue)
+    {
+        if (string.IsNullOrWhiteSpace(rawValue))
+        {
+            return null;
+        }
+
+        if (DateTime.TryParse(rawValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private async Task<bool> EnsureTokenFreshnessAsync()
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                Debug.LogWarning("Cannot refresh Twitch token because refresh token is missing.");
+                return false;
+            }
+
+            return await RefreshAccessTokenAsync();
+        }
+
+        if (accessTokenExpiresAt.HasValue && accessTokenExpiresAt.Value <= DateTime.UtcNow.AddMinutes(1))
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                Debug.LogWarning("Access token is expiring soon but no refresh token is available.");
+                return true;
+            }
+
+            return await RefreshAccessTokenAsync();
+        }
+
+        return true;
+    }
+
+    private async Task ConnectToTwitchAsync()
+    {
         var msg = isTest ? "Testing Twitch Connection" : "Connecting to Twitch";
+
+        if (connectionNotification != null)
+        {
+            try
+            {
+                connectionNotification.Close();
+            }
+            catch (Exception ex)
+            {
+                if (TwitchSharkName.IsDebug())
+                {
+                    Debug.LogWarning($"Failed to close previous notification: {ex}");
+                }
+            }
+            finally
+            {
+                connectionNotification = null;
+            }
+        }
+
         connectionNotification = TwitchSharkName.LoadingNotification(msg);
-        client = new Twitch(username, token);
+        client = new Twitch(username, PrepareIrcToken(accessToken));
         client.OnMessage += OnMessage;
         client.OnConnection += OnConnection;
         cts = new CancellationTokenSource();
         client.Start(cts);
 
         await client.JoinChannel(channel);
+    }
+
+    private static string PrepareIrcToken(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return token;
+        }
+
+        return token.StartsWith("oauth:", StringComparison.OrdinalIgnoreCase) ? token : $"oauth:{token}";
+    }
+
+    private async Task RestartClientAsync()
+    {
+        Stop();
+
+        if (!await EnsureTokenFreshnessAsync())
+        {
+            TwitchSharkName.ErrorNotification("Unable to refresh Twitch credentials. Please update your tokens.");
+            return;
+        }
+
+        await ConnectToTwitchAsync();
+    }
+
+    private async Task<bool> RefreshAccessTokenAsync()
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken) || string.IsNullOrWhiteSpace(clientId))
+        {
+            Debug.LogWarning("Cannot refresh Twitch token because refresh token or client ID is missing.");
+            return false;
+        }
+
+        await tokenRefreshLock.WaitAsync();
+
+        try
+        {
+            var payload = await SendRefreshRequestAsync();
+
+            if (payload == null)
+            {
+                return false;
+            }
+
+            var parsed = JsonUtility.FromJson<TwitchTokenResponse>(payload);
+
+            if (parsed == null || string.IsNullOrEmpty(parsed.access_token))
+            {
+                Debug.LogError("Received invalid Twitch token refresh response.");
+                return false;
+            }
+
+            accessToken = parsed.access_token;
+
+            if (!string.IsNullOrEmpty(parsed.refresh_token))
+            {
+                refreshToken = parsed.refresh_token;
+            }
+
+            if (parsed.expires_in > 0)
+            {
+                accessTokenExpiresAt = DateTime.UtcNow.AddSeconds(parsed.expires_in);
+            }
+
+            PersistAuthTokens();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception while refreshing Twitch token: {ex}");
+            return false;
+        }
+        finally
+        {
+            tokenRefreshLock.Release();
+        }
+    }
+
+    private void PersistAuthTokens()
+    {
+        TwitchSharkName.ExtraSettingsAPI_SetDataValue(TwitchSharkName.SETTINGS_AUTH_DATA, TwitchSharkName.AUTH_DATA_ACCESS_TOKEN_KEY, accessToken ?? "");
+        TwitchSharkName.ExtraSettingsAPI_SetDataValue(TwitchSharkName.SETTINGS_AUTH_DATA, TwitchSharkName.AUTH_DATA_REFRESH_TOKEN_KEY, refreshToken ?? "");
+        TwitchSharkName.ExtraSettingsAPI_SetDataValue(TwitchSharkName.SETTINGS_AUTH_DATA, TwitchSharkName.AUTH_DATA_CLIENT_ID_KEY, clientId ?? "");
+
+        var expiryValue = accessTokenExpiresAt.HasValue ? accessTokenExpiresAt.Value.ToString("o") : "";
+        TwitchSharkName.ExtraSettingsAPI_SetDataValue(TwitchSharkName.SETTINGS_AUTH_DATA, TwitchSharkName.AUTH_DATA_ACCESS_EXPIRY_KEY, expiryValue);
+    }
+
+    private async Task<string> SendRefreshRequestAsync()
+    {
+        var form = new WWWForm();
+        form.AddField("client_id", clientId);
+        form.AddField("grant_type", "refresh_token");
+        form.AddField("refresh_token", refreshToken);
+
+        using (var request = UnityWebRequest.Post(TokenRefreshUrl, form))
+        {
+            request.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            var asyncOp = request.SendWebRequest();
+
+            while (!asyncOp.isDone)
+            {
+                await Task.Yield();
+            }
+
+            if (request.isNetworkError || request.isHttpError)
+            {
+                Debug.LogError($"Failed to refresh Twitch token ({request.responseCode}): {request.error}");
+                return null;
+            }
+
+            return request.downloadHandler.text;
+        }
+    }
+
+    private async Task<bool> TryRecoverFromAuthenticationFailureAsync()
+    {
+        if (!await RefreshAccessTokenAsync())
+        {
+            return false;
+        }
+
+        TwitchSharkName.SuccessNotification("Twitch token refreshed. Reconnecting...");
+        await RestartClientAsync();
+        return true;
+    }
+
+    [Serializable]
+    private class TwitchTokenResponse
+    {
+        public string access_token;
+        public string refresh_token;
+        public int expires_in;
     }
 
     public void Reset()
@@ -194,6 +426,11 @@ public class NameRepository
                 Stop();
             }
 
+            return;
+        }
+
+        if (await TryRecoverFromAuthenticationFailureAsync())
+        {
             return;
         }
 

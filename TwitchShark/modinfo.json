@@ -6,7 +6,7 @@
   "license": "GPL-3.0",
   "icon": "icon.png",
   "banner": "banner.png",
-  "gameVersion": "1.0",
+  "gameVersion": "1.09",
   "requiredByAllPlayers": true,
   "updateUrl": "https://raftmodding.com/api/v1/mods/twitch-shark/version.txt",
   "isModPermanent": false,
@@ -15,13 +15,25 @@
     {
       "type": "input",
       "name": "twitchUsername",
-      "text": "Twitch Bot Username",
+      "text": "Twitch Bot Username (must match token account)",
       "mode": "Standard"
     },
     {
       "type": "input",
-      "name": "twitchToken",
-      "text": "Twitch Bot Oauth Token",
+      "name": "twitchAccessToken",
+      "text": "Twitch Access Token",
+      "mode": "Password"
+    },
+    {
+      "type": "input",
+      "name": "twitchRefreshToken",
+      "text": "Twitch Refresh Token",
+      "mode": "Password"
+    },
+    {
+      "type": "input",
+      "name": "twitchClientId",
+      "text": "Twitch Client ID",
       "mode": "Password"
     },
     {
@@ -93,6 +105,12 @@
       "text": "Debug",
       "access": "both",
       "default": false
+    },
+    {
+      "type": "data",
+      "name": "twitchAuthDatastore",
+      "access": "both",
+      "default": {}
     },
     {
       "type": "data",

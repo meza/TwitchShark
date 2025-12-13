@@ -13,7 +13,9 @@ public class TwitchSharkName : Mod
     public static string version = "VERSION";
     public static readonly string SETTINGS_BLACKLIST = "twitchSharkBlacklistDatastore";
     public static readonly string SETTINGS_USERNAME = "twitchUsername";
-    public static readonly string SETTINGS_TOKEN = "twitchToken";
+    public static readonly string SETTINGS_ACCESS_TOKEN = "twitchAccessToken";
+    public static readonly string SETTINGS_REFRESH_TOKEN = "twitchRefreshToken";
+    public static readonly string SETTINGS_CLIENT_ID = "twitchClientId";
     public static readonly string SETTINGS_CHANNEL = "twitchChannel";
     public static readonly string SETTINGS_DEFAULT_SHARK_NAME = "twitchDefaultSharkName";
     public static readonly string SETTINGS_SUB_ONLY = "twitchSubOnly";
@@ -26,6 +28,11 @@ public class TwitchSharkName : Mod
     public static readonly string SETTINGS_DEBUG = "twitchDebug";
     public static readonly string SETTINGS_RESET = "twitchSharkResetEntries";
     public static readonly string SETTINGS_NAME_VISIBILITY = "twitchSharkNameVisibility";
+    public static readonly string SETTINGS_AUTH_DATA = "twitchAuthDatastore";
+    public static readonly string AUTH_DATA_ACCESS_TOKEN_KEY = "accessToken";
+    public static readonly string AUTH_DATA_REFRESH_TOKEN_KEY = "refreshToken";
+    public static readonly string AUTH_DATA_CLIENT_ID_KEY = "clientId";
+    public static readonly string AUTH_DATA_ACCESS_EXPIRY_KEY = "accessTokenExpiresAt";
     static bool ExtraSettingsAPI_Loaded = false;
     //public readonly static string DEFAULT_COLOR = "#BBA16A";
     public static readonly string DEFAULT_COLOR = "#FFFFFF";
@@ -45,8 +52,11 @@ public class TwitchSharkName : Mod
     private Harmony harmonyInstance;
     private AssetBundle assets;
     private string previousUsername = "";
-    private string previousToken = "";
+    private string previousAccessToken = "";
+    private string previousRefreshToken = "";
+    private string previousClientId = "";
     private string previousChannelName = "";
+    private string previousAccessTokenExpiry = "";
 
     public IEnumerator Start()
     {
@@ -70,18 +80,51 @@ public class TwitchSharkName : Mod
             return;
         }
 
-        previousUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
-        previousToken = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
-        previousChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
+        SyncAuthInputsToDataStore();
 
-        if (previousToken == "" || previousUsername == "" || previousChannelName == "")
+        previousUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
+        previousAccessToken = GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY, SETTINGS_ACCESS_TOKEN);
+        previousRefreshToken = GetAuthDataValue(AUTH_DATA_REFRESH_TOKEN_KEY, SETTINGS_REFRESH_TOKEN);
+        previousClientId = GetAuthDataValue(AUTH_DATA_CLIENT_ID_KEY, SETTINGS_CLIENT_ID);
+        previousChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
+        previousAccessTokenExpiry = GetAuthDataValue(AUTH_DATA_ACCESS_EXPIRY_KEY);
+
+        var missingDetails = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(previousUsername))
         {
-            Debug.Log("Missing Twitch Details. Please go to Settings");
-            FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, "Missing Twitch Details. Please go to Settings", 10, HNotify.ErrorSprite);
+            missingDetails.Add("Bot username");
+        }
+
+        if (string.IsNullOrWhiteSpace(previousChannelName))
+        {
+            missingDetails.Add("Target channel");
+        }
+
+        if (string.IsNullOrWhiteSpace(previousAccessToken))
+        {
+            missingDetails.Add("Access token");
+        }
+
+        if (string.IsNullOrWhiteSpace(previousRefreshToken))
+        {
+            missingDetails.Add("Refresh token");
+        }
+
+        if (string.IsNullOrWhiteSpace(previousClientId))
+        {
+            missingDetails.Add("Client ID");
+        }
+
+        if (missingDetails.Count > 0)
+        {
+            var formatted = $"Missing Twitch authentication details: {string.Join(", ", missingDetails)}. Please open Settings.";
+            Debug.Log(formatted);
+            FindObjectOfType<HNotify>().AddNotification(HNotify.NotificationType.normal, formatted, 10, HNotify.ErrorSprite);
             return;
         }
 
-        names.Start(previousUsername, previousToken, previousChannelName, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
+        names.Start(previousUsername, previousAccessToken, previousRefreshToken, previousClientId, previousChannelName, previousAccessTokenExpiry, isTest).ContinueWith(OnAsyncMethodFailed, TaskContinuationOptions.OnlyOnFaulted);
     }
 
     public TextMeshPro AddNametag(AI_StateMachine_Shark shark)
@@ -262,6 +305,47 @@ public class TwitchSharkName : Mod
         }
     }
 
+    private static void SyncAuthInputsToDataStore()
+    {
+        PersistAuthInput(SETTINGS_ACCESS_TOKEN, AUTH_DATA_ACCESS_TOKEN_KEY);
+        PersistAuthInput(SETTINGS_REFRESH_TOKEN, AUTH_DATA_REFRESH_TOKEN_KEY);
+        PersistAuthInput(SETTINGS_CLIENT_ID, AUTH_DATA_CLIENT_ID_KEY);
+    }
+
+    private static void PersistAuthInput(string settingName, string targetKey)
+    {
+        var rawValue = ExtraSettingsAPI_GetInputValue(settingName);
+
+        if (!string.IsNullOrWhiteSpace(rawValue))
+        {
+            ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, targetKey, rawValue.Trim());
+        }
+    }
+
+    private static string GetAuthDataValue(string key, string fallbackSetting = null)
+    {
+        var storedValue = ExtraSettingsAPI_GetDataValue(SETTINGS_AUTH_DATA, key);
+
+        if (!string.IsNullOrWhiteSpace(storedValue))
+        {
+            return storedValue.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(fallbackSetting))
+        {
+            var fallbackValue = ExtraSettingsAPI_GetInputValue(fallbackSetting);
+
+            if (!string.IsNullOrWhiteSpace(fallbackValue))
+            {
+                var trimmed = fallbackValue.Trim();
+                ExtraSettingsAPI_SetDataValue(SETTINGS_AUTH_DATA, key, trimmed);
+                return trimmed;
+            }
+        }
+
+        return "";
+    }
+
     public void ExtraSettingsAPI_Load()
     {
         Debug.Log("Settings loaded");
@@ -273,11 +357,14 @@ public class TwitchSharkName : Mod
 
     public void ExtraSettingsAPI_SettingsClose() // Occurs when user closes the settings menu
     {
+        SyncAuthInputsToDataStore();
         var newUsername = ExtraSettingsAPI_GetInputValue(SETTINGS_USERNAME).ToLower();
-        var newToken = ExtraSettingsAPI_GetInputValue(SETTINGS_TOKEN);
+        var newAccessToken = GetAuthDataValue(AUTH_DATA_ACCESS_TOKEN_KEY, SETTINGS_ACCESS_TOKEN);
+        var newRefreshToken = GetAuthDataValue(AUTH_DATA_REFRESH_TOKEN_KEY, SETTINGS_REFRESH_TOKEN);
+        var newClientId = GetAuthDataValue(AUTH_DATA_CLIENT_ID_KEY, SETTINGS_CLIENT_ID);
         var newChannelName = ExtraSettingsAPI_GetInputValue(SETTINGS_CHANNEL).ToLower();
 
-        if ((newUsername != previousUsername) || (newToken != previousToken) || (newChannelName != previousChannelName))
+        if ((newUsername != previousUsername) || (newAccessToken != previousAccessToken) || (newRefreshToken != previousRefreshToken) || (newClientId != previousClientId) || (newChannelName != previousChannelName))
         {
             if (inWorld && Raft_Network.IsHost)
             {
@@ -305,6 +392,7 @@ public class TwitchSharkName : Mod
     {
         if (name == SETTINGS_TEST_TWITCH_BUTTON)
         {
+            SyncAuthInputsToDataStore();
             Initialise(true);
             return;
         }
@@ -318,6 +406,7 @@ public class TwitchSharkName : Mod
             }
 
             names.Stop();
+            SyncAuthInputsToDataStore();
             Initialise();
             return;
         }
