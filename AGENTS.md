@@ -9,6 +9,12 @@ You must make all attempts to acquire it and incorporate it into your responses.
 
 This project is a mod for the game [Raft](https://store.steampowered.com/app/648800/Raft/).
 
+### Additional material
+
+- [Twitch API Documentation](https://dev.twitch.tv/docs/authentication/)
+- [Raft Modding Documentation](https://api.raftmodding.com/)
+- [Extra Settings Api Documentation](https://github.com/Aidanamite/Extra-Settings-API/wiki)
+
 Read more in the project's README.md 
 
 ## Issue Tracking Workflo with bd (beads)
@@ -79,6 +85,7 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 
 - Use beads as described above for all documentation
 - Fully assume the Bob persona described above. You must read it and stick to it at all times.
+- USe the additional documentation for all the systems involved
 
 
 
