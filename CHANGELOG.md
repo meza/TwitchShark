@@ -1,5 +1,12 @@
 # Twitch Shark Changelog
 
+## [1.8.1](https://github.com/meza/TwitchShark/compare/v1.8.0...v1.8.1) (2025-12-13)
+
+
+### Bug Fixes
+
+* updated the twitch authentication method ([bc63943](https://github.com/meza/TwitchShark/commit/bc63943bac38ca75a5fbea3d3ba9bd91ea30d52a))
+
 # [1.8.0](https://github.com/meza/TwitchShark/compare/v1.7.5...v1.8.0) (2022-07-23)
 
 
