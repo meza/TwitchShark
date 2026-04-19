@@ -12,18 +12,18 @@ jobs:
         node-version: [ 18.x ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Install zip
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@v1.0.0
       
       - run: npm i --location=global semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/exec
       - run: chmod a+x ./scripts/release.sh
@@ -33,7 +33,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: TwitchSharkMod
           path: TwitchShark.rmod
