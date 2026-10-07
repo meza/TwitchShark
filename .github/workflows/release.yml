@@ -12,18 +12,18 @@ jobs:
         node-version: [ 18.x ]
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Install zip
-        uses: montudor/action-zip@v1.0.0
+        uses: montudor/action-zip@0852c26906e00f8a315c704958823928d8018b28 # v1.0.0
       
       - run: npm i --location=global semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/exec
       - run: chmod a+x ./scripts/release.sh
